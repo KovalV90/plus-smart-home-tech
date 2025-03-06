@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
 @Getter
 @Setter
@@ -16,10 +14,10 @@ public class ScenarioCondition {
     private String sensorId;
 
     @NotNull
-    private ConditionTypeAvro type;
+    private ConditionType type;
 
     @NotNull
-    private ConditionOperationAvro operation;
+    private ConditionOperation operation;
 
     private Object value;
 }
