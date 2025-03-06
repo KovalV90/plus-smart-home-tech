@@ -46,12 +46,15 @@ public class KafkaCollectorProducer {
 
     public void sendHubEvent(String topic, HubEvent event) {
         try {
+            logger.info("Попытка отправить HubEvent в Kafka: hubId={}, type={}",
+                    event.getHubId(), event.getClass().getSimpleName());
             byte[] avroBytes = AvroConverter.convertHubEvent(event);
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, event.getHubId(), avroBytes);
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
                     logger.error("Ошибка отправки события хаба в Kafka", exception);
                 } else {
+
                     logger.info("Событие хаба отправлено в Kafka: topic={}, partition={}, offset={}",
                             metadata.topic(), metadata.partition(), metadata.offset());
                 }

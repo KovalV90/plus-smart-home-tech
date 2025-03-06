@@ -103,7 +103,7 @@ public class AvroConverter {
 
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
                 .setHubId(hubEvent.getHubId())
-                .setTimestamp(hubEvent.getTimestamp())
+                .setTimestamp(hubEvent.getTimestamp().toEpochMilli())
                 .setPayload(payload)
                 .build();
 
