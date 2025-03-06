@@ -8,9 +8,13 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.collector.converter.AvroConverter;
+import ru.yandex.practicum.collector.converter.AvroSerializationUtil;
+import ru.yandex.practicum.collector.converter.HubEventAvroConverter;
+import ru.yandex.practicum.collector.converter.SensorEventAvroConverter;
 import ru.yandex.practicum.collector.model.HubEvent;
 import ru.yandex.practicum.collector.model.SensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.util.Properties;
 
@@ -29,7 +33,8 @@ public class KafkaCollectorProducer {
 
     public void sendSensorEvent(String topic, SensorEvent event) {
         try {
-            byte[] avroBytes = AvroConverter.convertSensorEvent(event);
+            SensorEventAvro sensorEventAvro = SensorEventAvroConverter.convert(event);
+            byte[] avroBytes = AvroSerializationUtil.serialize(sensorEventAvro, SensorEventAvro.class);
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, event.getId(), avroBytes);
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
@@ -48,7 +53,8 @@ public class KafkaCollectorProducer {
         try {
             logger.info("Попытка отправить HubEvent в Kafka: hubId={}, type={}",
                     event.getHubId(), event.getClass().getSimpleName());
-            byte[] avroBytes = AvroConverter.convertHubEvent(event);
+            HubEventAvro hubEventAvro = HubEventAvroConverter.convert(event);
+            byte[] avroBytes = AvroSerializationUtil.serialize(hubEventAvro, HubEventAvro.class);
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, event.getHubId(), avroBytes);
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
