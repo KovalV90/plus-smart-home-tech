@@ -1,4 +1,4 @@
-package telemetry.collector.model;
+package ru.yandex.practicum.collector.model;
 
 import lombok.Getter;
 import lombok.Setter;

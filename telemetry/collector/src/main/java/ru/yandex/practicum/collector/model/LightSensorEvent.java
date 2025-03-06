@@ -1,4 +1,4 @@
-package telemetry.collector.model;
+package ru.yandex.practicum.collector.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,8 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class MotionSensorEvent extends SensorEvent {
+public class LightSensorEvent extends SensorEvent {
     private int linkQuality;
-    private boolean motion;
-    private int voltage;
+    private int luminosity;
 }

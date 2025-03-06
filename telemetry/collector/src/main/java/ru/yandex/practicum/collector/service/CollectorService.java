@@ -1,9 +1,9 @@
-package telemetry.collector.service;
+package ru.yandex.practicum.collector.service;
 
-import telemetry.collector.kafka.KafkaCollectorProducer;
-import telemetry.collector.model.SensorEvent;
-import telemetry.collector.model.HubEvent;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.collector.kafka.KafkaCollectorProducer;
+import ru.yandex.practicum.collector.model.HubEvent;
+import ru.yandex.practicum.collector.model.SensorEvent;
 
 @Service
 public class CollectorService {

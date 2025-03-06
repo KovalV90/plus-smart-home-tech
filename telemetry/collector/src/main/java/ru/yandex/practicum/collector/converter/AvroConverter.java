@@ -1,14 +1,15 @@
-package telemetry.collector.converter;
-
-import telemetry.collector.model.*;
-import ru.yandex.practicum.kafka.telemetry.event.*;
+package ru.yandex.practicum.collector.converter;
 
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumWriter;
+import ru.yandex.practicum.collector.model.*;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AvroConverter {
 
@@ -87,7 +88,7 @@ public class AvroConverter {
                         .build();
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported sensor event type: " + event.getType());
+                throw new IllegalArgumentException("Неподдерживаемый тип события датчика: " + event.getType());
         }
         return serializeAvro(avroEvent, SensorEventAvro.class);
     }
@@ -103,14 +104,66 @@ public class AvroConverter {
                         .setPayload(
                                 DeviceAddedEventAvro.newBuilder()
                                         .setId(deviceAdded.getId())
-                                        .setDeviceType(deviceAdded.getDeviceType().name())
+                                        .setType(deviceAdded.getDeviceType())
                                         .build()
                         )
                         .build();
                 break;
-            // Дополнительные типы (DEVICE_REMOVED, SCENARIO_ADDED, SCENARIO_REMOVED) можно добавить аналогичным образом.
+            case DEVICE_REMOVED:
+                DeviceRemovedEvent deviceRemoved = (DeviceRemovedEvent) event;
+                avroEvent = HubEventAvro.newBuilder()
+                        .setHubId(deviceRemoved.getHubId())
+                        .setTimestamp(deviceRemoved.getTimestamp().toEpochMilli())
+                        .setPayload(
+                                DeviceRemovedEventAvro.newBuilder()
+                                        .setId(deviceRemoved.getId())
+                                        .build()
+                        )
+                        .build();
+                break;
+            case SCENARIO_ADDED:
+                ScenarioAddedEvent scenarioAdded = (ScenarioAddedEvent) event;
+                List<ScenarioConditionAvro> avroConditions = scenarioAdded.getConditions().stream()
+                        .map(cond -> ScenarioConditionAvro.newBuilder()
+                                .setSensorId(cond.getSensorId())
+                                .setType(cond.getType())
+                                .setOperation(cond.getOperation())
+                                .setValue(cond.getValue())
+                                .build())
+                        .collect(Collectors.toList());
+                List<DeviceActionAvro> avroActions = scenarioAdded.getActions().stream()
+                        .map(action -> DeviceActionAvro.newBuilder()
+                                .setSensorId(action.getSensorId())
+                                .setType(action.getType())
+                                .setValue(action.getValue())
+                                .build())
+                        .collect(Collectors.toList());
+                avroEvent = HubEventAvro.newBuilder()
+                        .setHubId(scenarioAdded.getHubId())
+                        .setTimestamp(scenarioAdded.getTimestamp().toEpochMilli())
+                        .setPayload(
+                                ScenarioAddedEventAvro.newBuilder()
+                                        .setName(scenarioAdded.getName())
+                                        .setConditions(avroConditions)
+                                        .setActions(avroActions)
+                                        .build()
+                        )
+                        .build();
+                break;
+            case SCENARIO_REMOVED:
+                ScenarioRemovedEvent scenarioRemoved = (ScenarioRemovedEvent) event;
+                avroEvent = HubEventAvro.newBuilder()
+                        .setHubId(scenarioRemoved.getHubId())
+                        .setTimestamp(scenarioRemoved.getTimestamp().toEpochMilli())
+                        .setPayload(
+                                ScenarioRemovedEventAvro.newBuilder()
+                                        .setName(scenarioRemoved.getName())
+                                        .build()
+                        )
+                        .build();
+                break;
             default:
-                throw new IllegalArgumentException("Unsupported hub event type: " + event.getType());
+                throw new IllegalArgumentException("Неподдерживаемый тип события хаба: " + event.getType());
         }
         return serializeAvro(avroEvent, HubEventAvro.class);
     }

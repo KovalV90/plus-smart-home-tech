@@ -1,13 +1,16 @@
-package telemetry.collector.controller;
+package ru.yandex.practicum.collector.controller;
 
-import jakarta.validation.Valid;
-import telemetry.collector.model.SensorEvent;
-import telemetry.collector.model.HubEvent;
-import telemetry.collector.service.CollectorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.collector.model.HubEvent;
+import ru.yandex.practicum.collector.model.SensorEvent;
+import ru.yandex.practicum.collector.service.CollectorService;
 
 
 @RestController

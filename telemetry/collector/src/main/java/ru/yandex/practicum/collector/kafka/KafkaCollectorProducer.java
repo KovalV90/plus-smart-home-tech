@@ -1,15 +1,18 @@
-package telemetry.collector.kafka;
+package ru.yandex.practicum.collector.kafka;
 
-import telemetry.collector.converter.AvroConverter;
-import telemetry.collector.model.SensorEvent;
-import telemetry.collector.model.HubEvent;
-import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.serialization.StringSerializer;
+import jakarta.annotation.PreDestroy;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.springframework.stereotype.Service;
-import java.util.Properties;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.collector.converter.AvroConverter;
+import ru.yandex.practicum.collector.model.HubEvent;
+import ru.yandex.practicum.collector.model.SensorEvent;
+
+import java.util.Properties;
 
 @Service
 public class KafkaCollectorProducer {
@@ -20,7 +23,6 @@ public class KafkaCollectorProducer {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("key.serializer", StringSerializer.class.getName());
-        // Используем сериализацию в бинарный формат
         props.put("value.serializer", ByteArraySerializer.class.getName());
         producer = new KafkaProducer<>(props);
     }
@@ -58,4 +60,12 @@ public class KafkaCollectorProducer {
             logger.error("Не удалось сконвертировать событие хаба в Avro", e);
         }
     }
+
+    @PreDestroy
+    public void closeProducer() {
+        logger.info("Закрытие KafkaProducer...");
+        producer.close();
+        logger.info("KafkaProducer закрыт.");
+    }
 }
+

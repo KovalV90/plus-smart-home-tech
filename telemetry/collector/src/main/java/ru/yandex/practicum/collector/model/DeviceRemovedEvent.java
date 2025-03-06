@@ -1,9 +1,9 @@
-package telemetry.collector.model;
+package ru.yandex.practicum.collector.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import jakarta.validation.constraints.NotBlank;
 
 @Getter
 @Setter
