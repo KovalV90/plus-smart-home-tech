@@ -61,7 +61,7 @@ public class AvroConverter {
         Object payload = switch (hubEvent) {
             case DeviceAddedEvent event -> DeviceAddedEventAvro.newBuilder()
                     .setId(event.getId())
-                    .setType(event.getDeviceType())
+                    .setType(DeviceTypeAvro.valueOf(event.getDeviceType().name()))
                     .build();
 
             case DeviceRemovedEvent event -> DeviceRemovedEventAvro.newBuilder()
@@ -72,8 +72,8 @@ public class AvroConverter {
                 List<ScenarioConditionAvro> avroConditions = event.getConditions().stream()
                         .map(cond -> ScenarioConditionAvro.newBuilder()
                                 .setSensorId(cond.getSensorId())
-                                .setType(cond.getType())
-                                .setOperation(cond.getOperation())
+                                .setType(ConditionTypeAvro.valueOf(cond.getType().name()))
+                                .setOperation(ConditionOperationAvro.valueOf(cond.getOperation().name()))
                                 .setValue(cond.getValue())
                                 .build())
                         .collect(Collectors.toList());
@@ -81,7 +81,7 @@ public class AvroConverter {
                 List<DeviceActionAvro> avroActions = event.getActions().stream()
                         .map(action -> DeviceActionAvro.newBuilder()
                                 .setSensorId(action.getSensorId())
-                                .setType(action.getType())
+                                .setType(ActionTypeAvro.valueOf(action.getType().name()))
                                 .setValue(action.getValue())
                                 .build())
                         .collect(Collectors.toList());
