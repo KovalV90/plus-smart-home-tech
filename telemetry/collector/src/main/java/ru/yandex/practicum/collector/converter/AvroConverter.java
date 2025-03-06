@@ -48,7 +48,7 @@ public class AvroConverter {
         SensorEventAvro avroEvent = SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp().toEpochMilli())
+                .setTimestamp(sensorEvent.getTimestamp())
                 .setPayload(payload)
                 .build();
 
@@ -103,7 +103,7 @@ public class AvroConverter {
 
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
                 .setHubId(hubEvent.getHubId())
-                .setTimestamp(hubEvent.getTimestamp().toEpochMilli())
+                .setTimestamp(hubEvent.getTimestamp())
                 .setPayload(payload)
                 .build();
 
