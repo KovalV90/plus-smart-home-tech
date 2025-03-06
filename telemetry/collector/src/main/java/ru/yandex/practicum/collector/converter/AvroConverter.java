@@ -8,6 +8,7 @@ import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +49,7 @@ public class AvroConverter {
         SensorEventAvro avroEvent = SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(sensorEvent.getTimestamp().toEpochMilli()))
                 .setPayload(payload)
                 .build();
 
@@ -103,7 +104,7 @@ public class AvroConverter {
 
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
                 .setHubId(hubEvent.getHubId())
-                .setTimestamp(hubEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(hubEvent.getTimestamp().toEpochMilli()))
                 .setPayload(payload)
                 .build();
 
