@@ -1,80 +1,68 @@
 package ru.yandex.practicum.collector.kafka;
 
-import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.collector.converter.AvroSerializationUtil;
-import ru.yandex.practicum.collector.converter.HubEventAvroConverter;
-import ru.yandex.practicum.collector.converter.SensorEventAvroConverter;
-import ru.yandex.practicum.collector.model.HubEvent;
-import ru.yandex.practicum.collector.model.SensorEvent;
-import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
+import java.time.Instant;
 import java.util.Properties;
 
+@Slf4j
 @Service
-public class KafkaCollectorProducer {
-    private static final Logger logger = LoggerFactory.getLogger(KafkaCollectorProducer.class);
-    private final KafkaProducer<String, byte[]> producer;
+public class KafkaCollectorProducer implements AutoCloseable {
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String KEY_SERIALIZER = StringSerializer.class.getName();
+    private static final String VALUE_SERIALIZER = "ru.yandex.practicum.collector.converter.GeneralAvroSerializer";
+
+    private final KafkaProducer<String, SpecificRecordBase> producer;
 
     public KafkaCollectorProducer() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
-        props.put("key.serializer", StringSerializer.class.getName());
-        props.put("value.serializer", ByteArraySerializer.class.getName());
+        props.put("bootstrap.servers", BOOTSTRAP_SERVERS);
+        props.put("key.serializer", KEY_SERIALIZER);
+        props.put("value.serializer", VALUE_SERIALIZER);
         producer = new KafkaProducer<>(props);
     }
 
-    public void sendSensorEvent(String topic, SensorEvent event) {
-        try {
-            SensorEventAvro sensorEventAvro = SensorEventAvroConverter.convert(event);
-            byte[] avroBytes = AvroSerializationUtil.serialize(sensorEventAvro, SensorEventAvro.class);
-            ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, event.getId(), avroBytes);
-            producer.send(record, (metadata, exception) -> {
-                if (exception != null) {
-                    logger.error("Ошибка отправки сенсорного события в Kafka", exception);
-                } else {
-                    logger.info("Сенсорное событие отправлено в Kafka: topic={}, partition={}, offset={}",
-                            metadata.topic(), metadata.partition(), metadata.offset());
-                }
-            });
-        } catch (Exception e) {
-            logger.error("Не удалось сконвертировать сенсорное событие в Avro", e);
+    /**
+     * Обрабатывает событие от датчика и сохраняет его в топике Kafka.
+     *
+     * @param event     Событие от датчика
+     * @param hubId     Идентификатор хаба, в котором зарегистрирован датчик
+     * @param timestamp Метка времени, когда произошло событие
+     * @param topicType Тип топика который нужно использовать для отправки сообщения
+     */
+    public void send(SpecificRecordBase event, String hubId, Instant timestamp, TopicType topicType) {
+        if (event == null || hubId == null || timestamp == null || topicType == null) {
+            log.error("Некорректные входные параметры для отправки сообщения в Kafka");
+            return;
         }
+        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
+                topicType.getTopicName(),
+                null,
+                timestamp.toEpochMilli(),
+                hubId,
+                event
+        );
+        producer.send(record, (metadata, exception) -> {
+            if (exception != null) {
+                log.error("Ошибка отправки события в Kafka", exception);
+            } else {
+                log.info("Сообщение отправлено в Kafka: topic={}, partition={}, offset={}",
+                        metadata.topic(), metadata.partition(), metadata.offset());
+            }
+        });
     }
 
-    public void sendHubEvent(String topic, HubEvent event) {
-        try {
-            logger.info("Попытка отправить HubEvent в Kafka: hubId={}, type={}",
-                    event.getHubId(), event.getClass().getSimpleName());
-            HubEventAvro hubEventAvro = HubEventAvroConverter.convert(event);
-            byte[] avroBytes = AvroSerializationUtil.serialize(hubEventAvro, HubEventAvro.class);
-            ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, event.getHubId(), avroBytes);
-            producer.send(record, (metadata, exception) -> {
-                if (exception != null) {
-                    logger.error("Ошибка отправки события хаба в Kafka", exception);
-                } else {
-
-                    logger.info("Событие хаба отправлено в Kafka: topic={}, partition={}, offset={}",
-                            metadata.topic(), metadata.partition(), metadata.offset());
-                }
-            });
-        } catch (Exception e) {
-            logger.error("Не удалось сконвертировать событие хаба в Avro", e);
-        }
-    }
-
-    @PreDestroy
-    public void closeProducer() {
-        logger.info("Закрытие KafkaProducer...");
+    @Override
+    public void close() {
+        log.info("Флаш и закрытие KafkaProducer...");
+        producer.flush();
         producer.close();
-        logger.info("KafkaProducer закрыт.");
+        log.info("KafkaProducer закрыт.");
     }
 }
 

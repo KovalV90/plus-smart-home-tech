@@ -10,11 +10,16 @@ import java.io.IOException;
 public class AvroSerializationUtil {
 
     public static <T> byte[] serialize(T avroObject, Class<T> clazz) throws IOException {
+        if (avroObject == null) {
+            throw new IllegalArgumentException("avroObject не может быть null");
+        }
         SpecificDatumWriter<T> writer = new SpecificDatumWriter<>(clazz);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
-        writer.write(avroObject, encoder);
-        encoder.flush();
-        return out.toByteArray();
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+            writer.write(avroObject, encoder);
+            encoder.flush();
+            return out.toByteArray();
+        }
     }
 }
