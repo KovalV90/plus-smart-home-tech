@@ -1,9 +1,9 @@
 package ru.yandex.practicum.collector.converter;
 
 import ru.yandex.practicum.collector.model.*;
-import ru.yandex.practicum.kafka.telemetry.event.*;
+        import ru.yandex.practicum.kafka.telemetry.event.*;
 
-import java.util.List;
+        import java.util.List;
 import java.util.stream.Collectors;
 
 public class HubEventAvroConverter {

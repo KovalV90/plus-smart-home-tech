@@ -1,11 +1,13 @@
 package ru.yandex.practicum.collector.converter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.io.IOException;
 import java.util.Map;
 
+@Slf4j
 public class GeneralAvroSerializer<T extends SpecificRecordBase> implements Serializer<T> {
     private static final String AVRO_RECORD_CLASS_CONFIG = "avro.record.class";
     private Class<T> avroClass;
@@ -19,6 +21,8 @@ public class GeneralAvroSerializer<T extends SpecificRecordBase> implements Seri
                 Class<T> clazz = (Class<T>) Class.forName(className);
                 this.avroClass = clazz;
             } catch (ClassNotFoundException e) {
+                log.error("Не найден класс Avro записи: {}", className, e);
+
                 throw new RuntimeException("Не найден класс Avro записи: " + className, e);
             }
         }
@@ -27,6 +31,8 @@ public class GeneralAvroSerializer<T extends SpecificRecordBase> implements Seri
     @Override
     public byte[] serialize(String topic, T data) {
         if (data == null) {
+            log.warn("Передан null в сериализатор Avro, topic={}", topic);
+
             return null;
         }
         @SuppressWarnings("unchecked")
@@ -34,6 +40,8 @@ public class GeneralAvroSerializer<T extends SpecificRecordBase> implements Seri
         try {
             return AvroSerializationUtil.serialize(data, clazz);
         } catch (IOException e) {
+            log.error("Ошибка сериализации Avro объекта, topic={}", topic, e);
+
             throw new RuntimeException("Ошибка сериализации Avro объекта", e);
         }
     }
