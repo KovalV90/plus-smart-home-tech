@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.collector.converter.GeneralAvroSerializer;
 
 import java.time.Instant;
 import java.util.Properties;
@@ -14,16 +15,18 @@ import java.util.Properties;
 @Service
 public class KafkaCollectorProducer implements AutoCloseable {
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String KEY_SERIALIZER = StringSerializer.class.getName();
-    private static final String VALUE_SERIALIZER = "ru.yandex.practicum.collector.converter.GeneralAvroSerializer";
+    //private static final String KEY_SERIALIZER = StringSerializer.class.getName();
+    private static final Class<?> KEY_SERIALIZER = StringSerializer.class;
+    // private static final String VALUE_SERIALIZER = "ru.yandex.practicum.collector.converter.GeneralAvroSerializer";
+    private static final Class<?> VALUE_SERIALIZER = GeneralAvroSerializer.class;
 
     private final KafkaProducer<String, SpecificRecordBase> producer;
 
     public KafkaCollectorProducer() {
         Properties props = new Properties();
         props.put("bootstrap.servers", BOOTSTRAP_SERVERS);
-        props.put("key.serializer", KEY_SERIALIZER);
-        props.put("value.serializer", VALUE_SERIALIZER);
+        props.put("key.serializer", KEY_SERIALIZER.getName());
+        props.put("value.serializer", VALUE_SERIALIZER.getName());
         producer = new KafkaProducer<>(props);
     }
 
@@ -40,6 +43,8 @@ public class KafkaCollectorProducer implements AutoCloseable {
             log.error("Некорректные входные параметры для отправки сообщения в Kafka");
             return;
         }
+        log.debug("Отправка сообщения: hubId={}, timestamp={}", hubId, timestamp.toEpochMilli());
+
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
                 topicType.getTopicName(),
                 null,

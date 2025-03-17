@@ -3,6 +3,8 @@ package ru.yandex.practicum.collector.converter;
 import ru.yandex.practicum.collector.model.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+import java.time.Instant;
+
 public class SensorEventAvroConverter {
 
     public static SensorEventAvro convert(SensorEvent sensorEvent) {
@@ -45,7 +47,9 @@ public class SensorEventAvroConverter {
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
+                //.setTimestamp(sensorEvent.getTimestamp())
+
+                .setTimestamp(Instant.ofEpochMilli(sensorEvent.getTimestamp().toEpochMilli()))
                 .setPayload(payload)
                 .build();
     }
