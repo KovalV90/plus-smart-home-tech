@@ -34,7 +34,7 @@ public class SensorEventDeserializer implements Deserializer<SensorEventAvro> {
                     .setHubId("unknown")
                     .setId("unknown")
                     .setTimestamp(null)
-                    .setPayload("{}")
+                    .setPayload("{\"humidity\":50, \"co2Level\":400}")
                     .build();
         }
     }

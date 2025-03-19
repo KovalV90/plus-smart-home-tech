@@ -50,13 +50,14 @@ public class AggregationService {
     }
 
     private void processEvent(SensorEventAvro event) {
-        if (event == null || event.getHubId() == null || event.getId() == null) {
+        if (event == null || event.getHubId() == null || event.getId() == null || event.getPayload() == null) {
             log.warn("Пропущено некорректное событие: {}", event);
             return;
         }
 
         String hubId = event.getHubId();
         String deviceId = event.getId();
+        String payload = event.getPayload().toString();
 
         SensorsSnapshotAvro snapshot = snapshots.computeIfAbsent(hubId, id ->
                 SensorsSnapshotAvro.newBuilder()
@@ -69,21 +70,17 @@ public class AggregationService {
         SensorStateAvro oldState = snapshot.getSensorsState().get(deviceId);
         SensorStateAvro newState = SensorStateAvro.newBuilder()
                 .setTimestamp(event.getTimestamp())
-                .setData(event.getPayload())
+                .setData(payload)
                 .build();
 
-        // Если данные изменились или устройство новое — обновляем
         if (oldState == null || isNewerAndDifferent(oldState, newState)) {
             snapshot.getSensorsState().put(deviceId, newState);
             snapshot.setTimestamp(event.getTimestamp());
-
-            sendSnapshot(snapshot);
-        } else {
-            // Теперь снапшот отправляется всегда, даже если данные не изменились (по заданию)
-            log.info("Данные сенсора {} не изменились, но отправляем снапшот", deviceId);
-            sendSnapshot(snapshot);
         }
+
+        sendSnapshot(snapshot);
     }
+
 
     private boolean isNewerAndDifferent(SensorStateAvro oldState, SensorStateAvro newState) {
         return newState.getTimestamp().isAfter(oldState.getTimestamp()) &&
@@ -91,11 +88,36 @@ public class AggregationService {
     }
 
     private void sendSnapshot(SensorsSnapshotAvro snapshot) {
-        try {
-            producer.sendSnapshot(snapshot);
-            log.info("Снапшот успешно отправлен в Kafka для хаба {}", snapshot.getHubId());
-        } catch (Exception e) {
-            log.error("Ошибка при отправке снапшота в Kafka для хаба {}", snapshot.getHubId(), e);
+        int maxRetries = 3;
+        int attempt = 0;
+        boolean success = false;
+
+        while (attempt < maxRetries && !success) {
+            try {
+                producer.sendSnapshot(snapshot);
+                log.info("Снапшот успешно отправлен в Kafka для хаба {}", snapshot.getHubId());
+                success = true;
+            } catch (Exception e) {
+                attempt++;
+                log.error("Ошибка при отправке снапшота в Kafka (попытка {}/{}): {}", attempt, maxRetries, e.getMessage());
+            }
         }
+
+        if (!success) {
+            log.error("Не удалось отправить снапшот после {} попыток: {}", maxRetries, snapshot);
+        }
+    }
+
+    private String normalizeSensorData(String payload) {
+        if (payload == null || payload.isEmpty()) {
+            return "{}"; // Возвращаем пустой JSON
+        }
+
+        // Дополнительные проверки значений
+        if (payload.contains("\"humidity\":101") || payload.contains("\"co2Level\":0")) {
+            log.warn("Обнаружены некорректные данные в payload: {}", payload);
+        }
+
+        return payload; // Гарантируем, что вернётся строка
     }
 }

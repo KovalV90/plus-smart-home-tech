@@ -36,12 +36,15 @@ public class KafkaConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventDeserializer.class);
 
+        // Читаем только новые сообщения
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+        // Ограничиваем загрузку данных
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50);
 
         return props;
     }
+
 
     @Bean
     public Properties producerProps() {
