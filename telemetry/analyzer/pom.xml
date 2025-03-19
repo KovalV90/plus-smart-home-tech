@@ -157,16 +157,8 @@
                 <version>${avro.version}</version>
                 <executions>
                     <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>schema</goal>
-                            <goal>protocol</goal>
-                            <goal>idl-protocol</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
-                            <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
-                        </configuration>
+                        <id>default</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
