@@ -29,12 +29,21 @@ public class AggregationService {
         try {
             while (true) {
                 ConsumerRecords<String, SensorEventAvro> records = consumer.poll();
+
+                if (records.isEmpty()) {
+                    log.warn("Нет новых событий в telemetry.sensors.v1");
+                    continue;
+                }
+
+                log.info("Получено {} событий от сенсоров", records.count());
+
                 records.forEach(record -> processEvent(record.value()));
                 consumer.commit();
             }
         } catch (Exception e) {
-            log.error("Ошибка при обработке событий: ", e);
+            log.error("Критическая ошибка в AggregationService!", e);
         } finally {
+            log.info("Закрываем Kafka consumer и producer...");
             consumer.close();
             producer.close();
         }
@@ -63,16 +72,30 @@ public class AggregationService {
                 .setData(event.getPayload())
                 .build();
 
+        // Если данные изменились или устройство новое — обновляем
         if (oldState == null || isNewerAndDifferent(oldState, newState)) {
             snapshot.getSensorsState().put(deviceId, newState);
             snapshot.setTimestamp(event.getTimestamp());
 
-            producer.sendSnapshot(snapshot);
+            sendSnapshot(snapshot);
+        } else {
+            // Теперь снапшот отправляется всегда, даже если данные не изменились (по заданию)
+            log.info("Данные сенсора {} не изменились, но отправляем снапшот", deviceId);
+            sendSnapshot(snapshot);
         }
     }
 
     private boolean isNewerAndDifferent(SensorStateAvro oldState, SensorStateAvro newState) {
         return newState.getTimestamp().isAfter(oldState.getTimestamp()) &&
                 !oldState.getData().equals(newState.getData());
+    }
+
+    private void sendSnapshot(SensorsSnapshotAvro snapshot) {
+        try {
+            producer.sendSnapshot(snapshot);
+            log.info("Снапшот успешно отправлен в Kafka для хаба {}", snapshot.getHubId());
+        } catch (Exception e) {
+            log.error("Ошибка при отправке снапшота в Kafka для хаба {}", snapshot.getHubId(), e);
+        }
     }
 }

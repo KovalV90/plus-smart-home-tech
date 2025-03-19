@@ -19,18 +19,26 @@ public class SensorEventDeserializer implements Deserializer<SensorEventAvro> {
     @Override
     public SensorEventAvro deserialize(String topic, byte[] data) {
         if (data == null) {
+            log.warn("Получено null-значение в десериализаторе, пропускаем");
             return null;
         }
 
         SpecificDatumReader<SensorEventAvro> reader = new SpecificDatumReader<>(SensorEventAvro.getClassSchema());
         Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
+
         try {
             return reader.read(null, decoder);
         } catch (Exception e) {
-            log.error("Ошибка десериализации SensorEventAvro", e);
-            return null;
+            log.error("Ошибка десериализации SensorEventAvro: {}", new String(data), e);
+            return SensorEventAvro.newBuilder()
+                    .setHubId("unknown")
+                    .setId("unknown")
+                    .setTimestamp(null)
+                    .setPayload("{}")
+                    .build();
         }
     }
+
 
     @Override
     public void close() {
