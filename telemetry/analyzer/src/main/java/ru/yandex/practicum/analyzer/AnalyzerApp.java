@@ -13,7 +13,6 @@ public class AnalyzerApp {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(AnalyzerApp.class, args);
         SnapshotProcessor processor = context.getBean(SnapshotProcessor.class);
-
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.execute(processor);
     }
