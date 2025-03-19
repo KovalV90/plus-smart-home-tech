@@ -24,6 +24,7 @@ public class SensorsSnapshotDeserializer implements Deserializer<SensorsSnapshot
 
         SpecificDatumReader<SensorsSnapshotAvro> reader = new SpecificDatumReader<>(SensorsSnapshotAvro.getClassSchema());
         Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
+
         try {
             return reader.read(null, decoder);
         } catch (Exception e) {
