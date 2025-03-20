@@ -6,14 +6,16 @@ import ru.yandex.practicum.collector.handler.SensorEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.LightSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import ru.yandex.practicum.collector.model.LightSensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+
 import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 public class LightSensorEventHandler implements SensorEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -22,22 +24,21 @@ public class LightSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        LightSensorEvent sensorEvent = mapFromProtoToModel(event);
-        eventProcessingService.processSensorEvent(sensorEvent);
+        eventService.sendSensorEvent(mapFromProtoToAvro(event));
     }
 
-    private LightSensorEvent mapFromProtoToModel(SensorEventProto sensorEventProto) {
-        LightSensorProto proto = sensorEventProto.getLightSensorEvent();
+    private SensorEventAvro mapFromProtoToAvro(SensorEventProto sensorEventProto) {
+        LightSensorProto lightSensorProto = sensorEventProto.getLightSensorEvent();
+        LightSensorAvro lightSensorAvro = LightSensorAvro.newBuilder()
+                .setLinkQuality(lightSensorProto.getLinkQuality())
+                .setLuminosity(lightSensorProto.getLuminosity())
+                .build();
 
-        LightSensorEvent event = new LightSensorEvent();
-        event.setId(sensorEventProto.getId());
-        event.setHubId(sensorEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(),
-                sensorEventProto.getTimestamp().getNanos()
-        ));
-        event.setLinkQuality(proto.getLinkQuality());
-        event.setLuminosity(proto.getLuminosity());
-
-        return event;
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEventProto.getId())
+                .setHubId(sensorEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(), sensorEventProto.getTimestamp().getNanos()))
+                .setPayload(lightSensorAvro)
+                .build();
     }
 }
