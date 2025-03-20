@@ -2,8 +2,10 @@ package ru.yandex.practicum.analyzer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import ru.yandex.practicum.analyzer.config.KafkaProperties;
 import ru.yandex.practicum.analyzer.processor.HubEventProcessor;
 import ru.yandex.practicum.analyzer.processor.SnapshotProcessor;
 
@@ -11,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @SpringBootApplication
+@EnableConfigurationProperties(KafkaProperties.class)
 public class AnalyzerApp {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(AnalyzerApp.class, args);
