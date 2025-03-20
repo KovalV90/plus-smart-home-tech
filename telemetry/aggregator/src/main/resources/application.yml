@@ -2,7 +2,7 @@ kafkaServer: localhost:9092
 sensorEventTopic: telemetry.sensors.v1
 hubEventTopic: telemetry.hubs.v1
 snapshotTopic: telemetry.snapshots.v1
-pollTimeout: 8000
+pollTimeout: 5000
 
 aggregator:
   kafka:
