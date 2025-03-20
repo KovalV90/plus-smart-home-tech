@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "kafka.config")
-public class KafkaConfig {
+public class KafkaProperties {
 
     private String bootstrapAddress;
     private Integer closeClientTimeoutSec;

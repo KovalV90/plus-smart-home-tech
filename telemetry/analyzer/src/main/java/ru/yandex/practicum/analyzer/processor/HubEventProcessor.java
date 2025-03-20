@@ -9,7 +9,7 @@ import org.apache.kafka.common.TopicPartition;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.analyzer.config.KafkaConnector;
-import ru.yandex.practicum.analyzer.config.KafkaConfig;
+import ru.yandex.practicum.analyzer.config.KafkaProperties;
 import ru.yandex.practicum.analyzer.handler.HubEventHandler;
 import ru.yandex.practicum.analyzer.repository.ActionRepository;
 import ru.yandex.practicum.analyzer.repository.ConditionRepository;
@@ -33,20 +33,20 @@ import java.util.stream.Collectors;
 public class HubEventProcessor implements Runnable {
 
     private final KafkaConnector kafkaConnector;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaProperties kafkaProperties;
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final Map<String, HubEventHandler> hubEventHandlers;
 
     public HubEventProcessor(KafkaConnector kafkaConnector,
-                             KafkaConfig kafkaConfig,
+                             KafkaProperties kafkaProperties,
                              ActionRepository actionRepository,
                              ConditionRepository conditionRepository,
                              ScenarioRepository scenarioRepository,
                              SensorRepository sensorRepository,
                              Set<HubEventHandler> hubEventHandlers) {
         this.kafkaConnector = kafkaConnector;
-        this.kafkaConfig = kafkaConfig;
+        this.kafkaProperties = kafkaProperties;
         this.hubEventHandlers = hubEventHandlers.stream()
                 .collect(Collectors.toMap(
                         HubEventHandler::getEventType,
@@ -60,7 +60,7 @@ public class HubEventProcessor implements Runnable {
         log.info("Запущен HubEventProcessor");
         try (Consumer<String, HubEventAvro> hubEventConsumer = kafkaConnector.getHubEventConsumer()) {
             while (true) {
-                Long pollTimeout = kafkaConfig.getHubConsumer().getPollTimeoutSec();
+                Long pollTimeout = kafkaProperties.getHubConsumer().getPollTimeoutSec();
                 ConsumerRecords<String, HubEventAvro> records = hubEventConsumer.poll(Duration.ofMillis(pollTimeout));
 
                 int count = 0;

@@ -17,7 +17,7 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class KafkaConnectorImpl {
 
-    private final KafkaConfig kafkaConfig;
+    private final KafkaProperties kafkaProperties;
 
     @Bean
     KafkaConnector getClient() {
@@ -46,34 +46,34 @@ public class KafkaConnectorImpl {
             public void stop() {
                 if (snapshotConsumer != null) {
                     snapshotConsumer.commitSync();
-                    snapshotConsumer.close(Duration.ofSeconds(kafkaConfig.getCloseClientTimeoutSec()));
+                    snapshotConsumer.close(Duration.ofSeconds(kafkaProperties.getCloseClientTimeoutSec()));
                 }
                 if (hubEventConsumer != null) {
                     hubEventConsumer.commitSync();
-                    hubEventConsumer.close(Duration.ofSeconds(kafkaConfig.getCloseClientTimeoutSec()));
+                    hubEventConsumer.close(Duration.ofSeconds(kafkaProperties.getCloseClientTimeoutSec()));
                 }
             }
 
             private void initSnapshotConsumer() {
                 Properties properties = new Properties();
-                properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.getBootstrapAddress());
-                properties.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaConfig.getSnapshotConsumer().getClientId());
-                properties.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfig.getSnapshotConsumer().getGroupId());
-                properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaConfig.getSnapshotConsumer().getKeyDeserializer());
-                properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaConfig.getSnapshotConsumer().getValueDeserializer());
+                properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapAddress());
+                properties.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaProperties.getSnapshotConsumer().getClientId());
+                properties.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getSnapshotConsumer().getGroupId());
+                properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getSnapshotConsumer().getKeyDeserializer());
+                properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getSnapshotConsumer().getValueDeserializer());
                 snapshotConsumer = new KafkaConsumer<>(properties);
-                snapshotConsumer.subscribe(kafkaConfig.getSnapshotConsumer().getTopics());
+                snapshotConsumer.subscribe(kafkaProperties.getSnapshotConsumer().getTopics());
             }
 
             private void initHubEventConsumer() {
                 Properties properties = new Properties();
-                properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.getBootstrapAddress());
-                properties.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaConfig.getHubConsumer().getClientId());
-                properties.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfig.getHubConsumer().getGroupId());
-                properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaConfig.getHubConsumer().getKeyDeserializer());
-                properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaConfig.getHubConsumer().getValueDeserializer());
+                properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapAddress());
+                properties.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaProperties.getHubConsumer().getClientId());
+                properties.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getHubConsumer().getGroupId());
+                properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getHubConsumer().getKeyDeserializer());
+                properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getHubConsumer().getValueDeserializer());
                 hubEventConsumer = new KafkaConsumer<>(properties);
-                hubEventConsumer.subscribe(kafkaConfig.getHubConsumer().getTopics());
+                hubEventConsumer.subscribe(kafkaProperties.getHubConsumer().getTopics());
             }
 
         };

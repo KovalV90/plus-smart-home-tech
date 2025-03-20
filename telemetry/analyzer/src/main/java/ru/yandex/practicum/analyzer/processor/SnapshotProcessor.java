@@ -6,7 +6,7 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.analyzer.config.KafkaConnector;
-import ru.yandex.practicum.analyzer.config.KafkaConfig;
+import ru.yandex.practicum.analyzer.config.KafkaProperties;
 import ru.yandex.practicum.analyzer.handler.SnapshotHandler;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
@@ -22,7 +22,7 @@ import java.util.Map;
 public class SnapshotProcessor implements Runnable {
 
     private final KafkaConnector kafkaConnector;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaProperties kafkaProperties;
     private final SnapshotHandler snapshotHandler;
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
@@ -32,7 +32,7 @@ public class SnapshotProcessor implements Runnable {
 
             while (true) {
 
-                Long pollTimeout = kafkaConfig.getSnapshotConsumer().getPollTimeoutSec();
+                Long pollTimeout = kafkaProperties.getSnapshotConsumer().getPollTimeoutSec();
                 ConsumerRecords<String, SensorsSnapshotAvro> records = snapshotConsumer.poll(Duration.ofMillis(pollTimeout));
 
                 int count = 0;
