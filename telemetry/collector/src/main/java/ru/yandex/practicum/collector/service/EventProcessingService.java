@@ -14,7 +14,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 @Service
 @RequiredArgsConstructor
 public class EventProcessingService {
-    private final KafkaProducerManager kafkaClient;
+    private final KafkaProducerManager kafkaProducerManager;
 
     @Value(value = "${sensorEventTopic}")
     private String sensorsTopic;
@@ -24,7 +24,7 @@ public class EventProcessingService {
 
     public void sendSensorEvent(SensorEventAvro event) {
         log.info("Отправка {} в топик {}", event, sensorsTopic);
-        kafkaClient.getProducer().send(new ProducerRecord<>(
+        kafkaProducerManager.getProducer().send(new ProducerRecord<>(
                 sensorsTopic,
                 null,
                 event.getTimestamp().toEpochMilli(),
@@ -36,7 +36,7 @@ public class EventProcessingService {
 
     public void sendHubEvent(HubEventAvro event) {
         log.info("Отправка {} в топик {}", event, sensorsTopic);
-        kafkaClient.getProducer().send(new ProducerRecord<>(
+        kafkaProducerManager.getProducer().send(new ProducerRecord<>(
                 hubTopic,
                 null,
                 event.getTimestamp().toEpochMilli(),
@@ -48,7 +48,7 @@ public class EventProcessingService {
 
     @PreDestroy
     public void stop() {
-        kafkaClient.stop();
+        kafkaProducerManager.stop();
     }
 
 }

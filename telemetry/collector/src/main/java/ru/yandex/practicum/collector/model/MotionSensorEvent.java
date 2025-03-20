@@ -1,15 +1,16 @@
 package ru.yandex.practicum.collector.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MotionSensorEvent extends SensorEvent {
+    @PositiveOrZero
     private int linkQuality;
     private boolean motion;
+    @PositiveOrZero
     private int voltage;
 
     @Override

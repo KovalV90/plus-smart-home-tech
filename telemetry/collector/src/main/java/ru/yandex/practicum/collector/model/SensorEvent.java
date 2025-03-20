@@ -30,8 +30,6 @@ public abstract class SensorEvent {
 
     @NotBlank
     private String hubId;
-
-    @NotNull
     private Instant timestamp = Instant.now();
 
     public abstract SensorEventType getType();
