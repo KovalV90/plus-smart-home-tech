@@ -1,24 +1,14 @@
-package ru.yandex.practicum.collector.controller;
+package ru.yandex.practicum.event.controller;
 
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
 import ru.yandex.practicum.collector.handler.HubEventHandler;
 import ru.yandex.practicum.collector.handler.SensorEventHandler;
-import ru.yandex.practicum.collector.model.HubEvent;
-import ru.yandex.practicum.collector.model.SensorEvent;
-import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
@@ -54,7 +44,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
             if (sensorEventHandlers.containsKey(request.getPayloadCase())) {
                 sensorEventHandlers.get(request.getPayloadCase()).handle(request);
             } else {
-                throw new IllegalArgumentException("Not found handler for event " + request.getPayloadCase());
+                throw new IllegalArgumentException("Не найден " + request.getPayloadCase());
             }
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
@@ -69,7 +59,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
             if (hubEventHandlers.containsKey(request.getPayloadCase())) {
                 hubEventHandlers.get(request.getPayloadCase()).handle(request);
             } else {
-                throw new IllegalArgumentException("Not found handler for hub " + request.getPayloadCase());
+                throw new IllegalArgumentException("Не найден " + request.getPayloadCase());
             }
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();

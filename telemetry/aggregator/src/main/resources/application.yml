@@ -1,10 +1,18 @@
+kafkaServer: localhost:9092
+sensorEventTopic: telemetry.sensors.v1
+hubEventTopic: telemetry.hubs.v1
+snapshotTopic: telemetry.snapshots.v1
+pollTimeout: 8000
+
+aggregator:
+  kafka:
+    producer:
+      id: aggregator-producer
+    consumer:
+      id: aggregator-consumer
+      group: aggregator-group
+
+    closeClientTimeoutSec: 30
+
 server:
   port: 8081
-kafka:
-  bootstrap:
-    servers: localhost:9092
-  topic:
-    sensors: telemetry.sensors.v1
-    snapshots: telemetry.snapshots.v1
-  consumer:
-    group: aggregator-group
