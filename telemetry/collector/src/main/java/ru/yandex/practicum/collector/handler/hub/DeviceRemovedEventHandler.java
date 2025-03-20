@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.handler.HubEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
+
 import ru.yandex.practicum.grpc.telemetry.event.DeviceRemovedEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
-import ru.yandex.practicum.collector.model.DeviceRemovedEvent;
-import ru.yandex.practicum.collector.model.HubEventType;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Instant;
 
@@ -15,7 +16,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class DeviceRemovedEventHandler implements HubEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -24,20 +25,20 @@ public class DeviceRemovedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        DeviceRemovedEvent deviceRemovedEvent = mapFromProtoToModel(event);
-        eventProcessingService.processHubEvent(deviceRemovedEvent);
+        eventService.sendHubEvent(mapFromProtoToAvro(event));
     }
 
-    private DeviceRemovedEvent mapFromProtoToModel(HubEventProto hubEventProto) {
-        DeviceRemovedEventProto proto = hubEventProto.getDeviceRemoved();
-        DeviceRemovedEvent event = new DeviceRemovedEvent();
-        event.setHubId(hubEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(),
-                hubEventProto.getTimestamp().getNanos()
-        ));
-        event.setType(HubEventType.DEVICE_REMOVED);
-        event.setId(proto.getId());
+    private HubEventAvro mapFromProtoToAvro(HubEventProto hubEventProto) {
+        DeviceRemovedEventProto deviceRemovedEventProto = hubEventProto.getDeviceRemoved();
+        DeviceRemovedEventAvro deviceRemovedEventAvro = DeviceRemovedEventAvro.newBuilder()
+                .setId(deviceRemovedEventProto.getId())
+                .build();
 
-        return event;
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(), hubEventProto.getTimestamp().getNanos()))
+                .setPayload(deviceRemovedEventAvro)
+                .build();
     }
+
 }

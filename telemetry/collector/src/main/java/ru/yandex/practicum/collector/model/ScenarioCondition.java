@@ -17,7 +17,7 @@ public class ScenarioCondition {
     private ConditionType type;
 
     @NotNull
-    private ConditionOperation operation;
+    private OperationType operation;
 
-    private Object value;
+    int value;
 }

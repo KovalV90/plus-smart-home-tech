@@ -6,14 +6,16 @@ import ru.yandex.practicum.collector.handler.SensorEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.TemperatureSensorProto;
-import ru.yandex.practicum.collector.model.TemperatureSensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
+
 import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 public class TemperatureSensorEventHandler implements SensorEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -22,22 +24,21 @@ public class TemperatureSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        TemperatureSensorEvent sensorEvent = mapFromProtoToModel(event);
-        eventProcessingService.processSensorEvent(sensorEvent);
+        eventService.sendSensorEvent(mapFromProtoToAvro(event));
     }
 
-    private TemperatureSensorEvent mapFromProtoToModel(SensorEventProto sensorEventProto) {
-        TemperatureSensorProto proto = sensorEventProto.getTemperatureSensorEvent();
+    private SensorEventAvro mapFromProtoToAvro(SensorEventProto sensorEventProto) {
+        TemperatureSensorProto temperatureSensorProto = sensorEventProto.getTemperatureSensorEvent();
+        TemperatureSensorAvro temperatureSensorAvro = TemperatureSensorAvro.newBuilder()
+                .setTemperatureC(temperatureSensorProto.getTemperatureC())
+                .setTemperatureF(temperatureSensorProto.getTemperatureF())
+                .build();
 
-        TemperatureSensorEvent event = new TemperatureSensorEvent();
-        event.setId(sensorEventProto.getId());
-        event.setHubId(sensorEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(),
-                sensorEventProto.getTimestamp().getNanos()
-        ));
-        event.setTemperatureC(proto.getTemperatureC());
-        event.setTemperatureF(proto.getTemperatureF());
-
-        return event;
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEventProto.getId())
+                .setHubId(sensorEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(), sensorEventProto.getTimestamp().getNanos()))
+                .setPayload(temperatureSensorAvro)
+                .build();
     }
 }

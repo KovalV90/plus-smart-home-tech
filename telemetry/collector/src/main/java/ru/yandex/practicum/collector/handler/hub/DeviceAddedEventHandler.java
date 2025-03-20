@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.handler.HubEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
-import ru.yandex.practicum.grpc.telemetry.event.DeviceAddedEventProto;
-import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
-import ru.yandex.practicum.collector.model.DeviceAddedEvent;  // Используем модель события
-import ru.yandex.practicum.collector.model.DeviceType;
-import ru.yandex.practicum.collector.model.HubEventType;
+
+import ru.yandex.practicum.grpc.telemetry.event.*;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Instant;
 
@@ -16,7 +14,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class DeviceAddedEventHandler implements HubEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -25,21 +23,21 @@ public class DeviceAddedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        DeviceAddedEvent deviceAddedEvent = mapFromProtoToModel(event);
-        eventProcessingService.processHubEvent(deviceAddedEvent);
+        eventService.sendHubEvent(mapFromProtoToAvro(event));
     }
 
-    private DeviceAddedEvent mapFromProtoToModel(HubEventProto hubEventProto) {
-        DeviceAddedEventProto proto = hubEventProto.getDeviceAdded();
-        DeviceAddedEvent event = new DeviceAddedEvent();
-        event.setHubId(hubEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(),
-                hubEventProto.getTimestamp().getNanos()
-        ));
-        event.setType(HubEventType.DEVICE_ADDED);
-        event.setId(proto.getId());
-        event.setDeviceType(DeviceType.valueOf(proto.getType().name()));
+    private HubEventAvro mapFromProtoToAvro(HubEventProto hubEventProto) {
+        DeviceAddedEventProto deviceAddedEventProto = hubEventProto.getDeviceAdded();
+        DeviceAddedEventAvro deviceAddedEventAvro = DeviceAddedEventAvro.newBuilder()
+                .setId(deviceAddedEventProto.getId())
+                .setType(DeviceTypeAvro.valueOf(deviceAddedEventProto.getType().name()))
+                .build();
 
-        return event;
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(), hubEventProto.getTimestamp().getNanos()))
+                .setPayload(deviceAddedEventAvro)
+                .build();
     }
+
 }
