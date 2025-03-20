@@ -1,28 +1,43 @@
-spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-    username: ${SPRING_DATASOURCE_USERNAME:sa}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.postgresql.Driver}
-  jpa:
-    properties:
-      hibernate:
-        dialect: ${SPRING_JPA_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
-
-server:
-  port: 8081
-
 kafka:
-  bootstrap:
-    servers: localhost:9092
-  topic:
-    snapshots: telemetry.snapshots.v1
-    hubEvents: telemetry.hubs.v1
-
+  config:
+    bootstrap-address: localhost:9092
+    close-client-timeout-sec: 10
+    hub-consumer:
+      client-id: hub-consumer
+      group-id: analyzer-hub-group
+      topics:
+        - telemetry.hubs.v1
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: ru.yandex.practicum.deserializer.HubEventDeserializer
+      poll-timeout-sec: 5
+    snapshot-consumer:
+      client-id: snapshot-consumer
+      group-id: analyzer-snapshot-group
+      topics:
+        - telemetry.snapshots.v1
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: ru.yandex.practicum.deserializer.SensorSnapshotDeserializer
+      poll-timeout-sec: 5
 grpc:
   client:
     hub-router:
-      address: 'static://localhost:59090'
+      address: static://localhost:59090
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    username: dbuser
+    password: 12345
+    url: jdbc:postgresql://localhost:6542/analyzer
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: 'true'
+    show-sql: 'true'
+  sql:
+    init:
+      mode: always
