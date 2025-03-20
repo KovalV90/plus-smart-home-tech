@@ -30,7 +30,7 @@ spring:
     driverClassName: org.postgresql.Driver
     username: dbuser
     password: 12345
-    url: jdbc:postgresql://localhost:6542/analyzer
+    url: jdbc:postgresql://localhost:5432/analyzer
   jpa:
     hibernate:
       ddl-auto: none
