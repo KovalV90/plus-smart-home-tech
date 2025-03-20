@@ -13,3 +13,6 @@ aggregator:
       group: aggregator-group
 
     closeClientTimeoutSec: 30
+
+server:
+  port: 8081
