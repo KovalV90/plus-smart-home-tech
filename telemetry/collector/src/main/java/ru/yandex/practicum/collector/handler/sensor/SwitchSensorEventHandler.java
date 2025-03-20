@@ -6,14 +6,16 @@ import ru.yandex.practicum.collector.handler.SensorEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SwitchSensorProto;
-import ru.yandex.practicum.collector.model.SwitchSensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
+
 import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 public class SwitchSensorEventHandler implements SensorEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -22,21 +24,20 @@ public class SwitchSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        SwitchSensorEvent sensorEvent = mapFromProtoToModel(event);
-        eventProcessingService.processSensorEvent(sensorEvent);
+        eventService.sendSensorEvent(mapFromProtoToAvro(event));
     }
 
-    private SwitchSensorEvent mapFromProtoToModel(SensorEventProto sensorEventProto) {
-        SwitchSensorProto proto = sensorEventProto.getSwitchSensorEvent();
+    private SensorEventAvro mapFromProtoToAvro(SensorEventProto sensorEventProto) {
+        SwitchSensorProto switchSensorProto = sensorEventProto.getSwitchSensorEvent();
+        SwitchSensorAvro switchSensorAvro = SwitchSensorAvro.newBuilder()
+                .setState(switchSensorProto.getState())
+                .build();
 
-        SwitchSensorEvent event = new SwitchSensorEvent();
-        event.setId(sensorEventProto.getId());
-        event.setHubId(sensorEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(),
-                sensorEventProto.getTimestamp().getNanos()
-        ));
-        event.setState(proto.getState());
-
-        return event;
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEventProto.getId())
+                .setHubId(sensorEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(), sensorEventProto.getTimestamp().getNanos()))
+                .setPayload(switchSensorAvro)
+                .build();
     }
 }

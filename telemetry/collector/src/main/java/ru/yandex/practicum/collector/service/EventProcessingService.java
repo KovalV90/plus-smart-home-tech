@@ -1,42 +1,54 @@
 package ru.yandex.practicum.collector.service;
 
+import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.collector.converter.HubEventAvroConverter;
-import ru.yandex.practicum.collector.converter.SensorEventAvroConverter;
-import ru.yandex.practicum.collector.kafka.KafkaCollectorProducer;
-import ru.yandex.practicum.collector.kafka.TopicType;
-import ru.yandex.practicum.collector.model.HubEvent;
-import ru.yandex.practicum.collector.model.SensorEvent;
+import ru.yandex.practicum.collector.kafka.KafkaProducerManager;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class EventProcessingService {
-    private final KafkaCollectorProducer kafkaProducer;
+    private final KafkaProducerManager kafkaClient;
 
-    public EventProcessingService(KafkaCollectorProducer kafkaProducer) {
+    @Value(value = "${sensorEventTopic}")
+    private String sensorsTopic;
 
-        this.kafkaProducer = kafkaProducer;
-    }
+    @Value(value = "${hubEventTopic}")
+    private String hubTopic;
 
-    public void processSensorEvent(SensorEvent event) {
-
-        SensorEventAvro sensorEventAvro = SensorEventAvroConverter.convert(event);
-        kafkaProducer.send(
-                sensorEventAvro,
+    public void sendSensorEvent(SensorEventAvro event) {
+        log.info("Отправка {} в топик {}", event, sensorsTopic);
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                sensorsTopic,
+                null,
+                event.getTimestamp().toEpochMilli(),
                 event.getHubId(),
-                event.getTimestamp(),
-                TopicType.SENSORS
+                event)
         );
+        log.info("Выполнена отправка {} в топик {}", event, sensorsTopic);
     }
 
-    public void processHubEvent(HubEvent event) {
-        HubEventAvro hubEventAvro = HubEventAvroConverter.convert(event);
-        kafkaProducer.send(
-                hubEventAvro,
+    public void sendHubEvent(HubEventAvro event) {
+        log.info("Отправка {} в топик {}", event, sensorsTopic);
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                hubTopic,
+                null,
+                event.getTimestamp().toEpochMilli(),
                 event.getHubId(),
-                event.getTimestamp(),
-                TopicType.HUBS
+                event)
         );
+        log.info("Выполнена отправка {} в топик {}", event, sensorsTopic);
     }
+
+    @PreDestroy
+    public void stop() {
+        kafkaClient.stop();
+    }
+
 }

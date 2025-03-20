@@ -3,19 +3,20 @@ package ru.yandex.practicum.collector.handler.hub;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.handler.HubEventHandler;
+
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.*;
-import ru.yandex.practicum.collector.model.*;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ScenarioAddedEventHandler implements HubEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -24,52 +25,61 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        ScenarioAddedEvent scenarioAddedEvent = mapFromProtoToModel(event);
-        eventProcessingService.processHubEvent(scenarioAddedEvent);
+        eventService.sendHubEvent(mapFromProtoToAvro(event));
     }
 
-    private ScenarioAddedEvent mapFromProtoToModel(HubEventProto hubEventProto) {
-        ScenarioAddedEventProto proto = hubEventProto.getScenarioAdded();
+    private HubEventAvro mapFromProtoToAvro(HubEventProto hubEventProto) {
+        ScenarioAddedEventProto scenarioAddedEventProto = hubEventProto.getScenarioAdded();
+        ScenarioAddedEventAvro scenarioAddedEventAvro = ScenarioAddedEventAvro.newBuilder()
+                .setName(scenarioAddedEventProto.getName())
+                .setActions(toDeviceActionAvro(scenarioAddedEventProto.getActionList()))
+                .setConditions(toScenarioConditionAvro(scenarioAddedEventProto.getConditionList()))
+                .build();
 
-        ScenarioAddedEvent event = new ScenarioAddedEvent();
-        event.setHubId(hubEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(),
-                hubEventProto.getTimestamp().getNanos()
-        ));
-        event.setType(HubEventType.SCENARIO_ADDED);
-        event.setName(proto.getName());
-        event.setConditions(mapConditions(proto.getConditionList()));
-        event.setActions(mapActions(proto.getActionList()));
-
-        return event;
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(), hubEventProto.getTimestamp().getNanos()))
+                .setPayload(scenarioAddedEventAvro)
+                .build();
     }
 
-    private static List<ScenarioCondition> mapConditions(List<ScenarioConditionProto> protoConditions) {
-        return protoConditions.stream().map(proto -> {
-            Object value = switch (proto.getValueCase()) {
-                case INT_VALUE -> proto.getIntValue();
-                case BOOL_VALUE -> proto.getBoolValue();
-                default -> null;
-            };
+    private static List<DeviceActionAvro> toDeviceActionAvro(List<DeviceActionProto> deviceActionProtos) {
 
-            ScenarioCondition condition = new ScenarioCondition();
-            condition.setSensorId(proto.getSensorId());
-            condition.setType(ConditionType.valueOf(proto.getType().name()));
-            condition.setOperation(ConditionOperation.valueOf(proto.getOperation().name()));
-            condition.setValue(value);
+        List<DeviceActionAvro> deviceActionAvros = new ArrayList<>();
 
-            return condition;
-        }).collect(Collectors.toList());
+        for (DeviceActionProto deviceActionProto : deviceActionProtos) {
+            deviceActionAvros.add(DeviceActionAvro.newBuilder()
+                    .setValue(deviceActionProto.getValue())
+                    .setSensorId(deviceActionProto.getSensorId())
+                    .setType(ActionTypeAvro.valueOf(deviceActionProto.getType().name()))
+                    .build());
+        }
+
+        return deviceActionAvros;
     }
 
-    private static List<DeviceAction> mapActions(List<DeviceActionProto> protoActions) {
-        return protoActions.stream().map(proto -> {
-            DeviceAction action = new DeviceAction();
-            action.setSensorId(proto.getSensorId());
-            action.setType(ActionType.valueOf(proto.getType().name()));
-            action.setValue(proto.hasValue() ? proto.getValue() : null);
+    private static List<ScenarioConditionAvro> toScenarioConditionAvro(List<ScenarioConditionProto> scenarioConditionProtos) {
 
-            return action;
-        }).collect(Collectors.toList());
+        List<ScenarioConditionAvro> scenarioConditionAvros = new ArrayList<>();
+        Object value = null;
+
+        for (ScenarioConditionProto scenarioConditionProto : scenarioConditionProtos) {
+
+            if (scenarioConditionProto.getValueCase() == ScenarioConditionProto.ValueCase.INT_VALUE) {
+                value = scenarioConditionProto.getIntValue();
+            } else if (scenarioConditionProto.getValueCase() == ScenarioConditionProto.ValueCase.BOOL_VALUE) {
+                value = scenarioConditionProto.getBoolValue();
+            }
+
+            scenarioConditionAvros.add(ScenarioConditionAvro.newBuilder()
+                    .setValue(value)
+                    .setType(ConditionTypeAvro.valueOf(scenarioConditionProto.getType().name()))
+                    .setOperation(ConditionOperationAvro.valueOf(scenarioConditionProto.getOperation().name()))
+                    .setSensorId(scenarioConditionProto.getSensorId())
+                    .build());
+        }
+
+        return scenarioConditionAvros;
     }
+
 }

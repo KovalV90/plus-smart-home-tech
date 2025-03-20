@@ -6,14 +6,16 @@ import ru.yandex.practicum.collector.handler.SensorEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.MotionSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import ru.yandex.practicum.collector.model.MotionSensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+
 import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 public class MotionSensorEventHandler implements SensorEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -22,23 +24,22 @@ public class MotionSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        MotionSensorEvent sensorEvent = mapFromProtoToModel(event);
-        eventProcessingService.processSensorEvent(sensorEvent);
+        eventService.sendSensorEvent(mapFromProtoToAvro(event));
     }
 
-    private MotionSensorEvent mapFromProtoToModel(SensorEventProto sensorEventProto) {
-        MotionSensorProto proto = sensorEventProto.getMotionSensorEvent();
+    private SensorEventAvro mapFromProtoToAvro(SensorEventProto sensorEventProto) {
+        MotionSensorProto motionSensorProto = sensorEventProto.getMotionSensorEvent();
+        MotionSensorAvro motionSensorAvro = MotionSensorAvro.newBuilder()
+                .setMotion(motionSensorProto.getMotion())
+                .setVoltage(motionSensorProto.getVoltage())
+                .setLinkQuality(motionSensorProto.getLinkQuality())
+                .build();
 
-        MotionSensorEvent event = new MotionSensorEvent();
-        event.setId(sensorEventProto.getId());
-        event.setHubId(sensorEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(),
-                sensorEventProto.getTimestamp().getNanos()
-        ));
-        event.setMotion(proto.getMotion());
-        event.setLinkQuality(proto.getLinkQuality());
-        event.setVoltage(proto.getVoltage());
-
-        return event;
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEventProto.getId())
+                .setHubId(sensorEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(sensorEventProto.getTimestamp().getSeconds(), sensorEventProto.getTimestamp().getNanos()))
+                .setPayload(motionSensorAvro)
+                .build();
     }
 }

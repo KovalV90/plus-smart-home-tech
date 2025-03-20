@@ -6,8 +6,8 @@ import ru.yandex.practicum.collector.handler.HubEventHandler;
 import ru.yandex.practicum.collector.service.EventProcessingService;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioRemovedEventProto;
-import ru.yandex.practicum.collector.model.ScenarioRemovedEvent;
-import ru.yandex.practicum.collector.model.HubEventType;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 
 import java.time.Instant;
 
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class ScenarioRemovedEventHandler implements HubEventHandler {
 
-    private final EventProcessingService eventProcessingService;
+    private final EventProcessingService eventService;
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -24,21 +24,20 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        ScenarioRemovedEvent scenarioRemovedEvent = mapFromProtoToModel(event);
-        eventProcessingService.processHubEvent(scenarioRemovedEvent);
+        eventService.sendHubEvent(mapFromProtoToAvro(event));
     }
 
-    private ScenarioRemovedEvent mapFromProtoToModel(HubEventProto hubEventProto) {
-        ScenarioRemovedEventProto proto = hubEventProto.getScenarioRemoved();
+    private HubEventAvro mapFromProtoToAvro(HubEventProto hubEventProto) {
+        ScenarioRemovedEventProto scenarioRemovedEventProto = hubEventProto.getScenarioRemoved();
+        ScenarioRemovedEventAvro scenarioRemovedEventAvro = ScenarioRemovedEventAvro.newBuilder()
+                .setName(scenarioRemovedEventProto.getName())
+                .build();
 
-        ScenarioRemovedEvent event = new ScenarioRemovedEvent();
-        event.setHubId(hubEventProto.getHubId());
-        event.setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(),
-                hubEventProto.getTimestamp().getNanos()
-        ));
-        event.setType(HubEventType.SCENARIO_REMOVED);
-        event.setName(proto.getName());
-
-        return event;
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEventProto.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(hubEventProto.getTimestamp().getSeconds(), hubEventProto.getTimestamp().getNanos()))
+                .setPayload(scenarioRemovedEventAvro)
+                .build();
     }
+
 }
