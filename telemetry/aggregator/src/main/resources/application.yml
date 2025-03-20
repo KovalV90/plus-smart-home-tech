@@ -12,3 +12,6 @@ aggregator:
       id: aggregator-consumer
       group: aggregator-group
     closeClientTimeoutSec: 5
+
+server:
+  port: 8081
