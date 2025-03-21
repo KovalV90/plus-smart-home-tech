@@ -11,10 +11,9 @@ import ru.yandex.practicum.analyzer.model.Scenario;
 import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
-
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 
-import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
@@ -48,7 +47,7 @@ public class SnapshotHandler {
 
     public void handle(SensorsSnapshotAvro snapshotAvro) {
 
-        log.info("snapshot: {}", snapshotAvro);
+        log.info("На обработку поступил snapshot: {}", snapshotAvro);
 
         List<Scenario> scenarios = scenarioRepository.findByHubId(snapshotAvro.getHubId());
         Map<String, SensorStateAvro> sensorStates = snapshotAvro.getSensorsState();
@@ -72,7 +71,7 @@ public class SnapshotHandler {
                         .setNanos(Instant.now().getNano())
                         .build();
 
-                HubRouterControllerProto.DeviceActionRequest request = HubRouterControllerProto.DeviceActionRequest.newBuilder()
+                DeviceActionRequest request = DeviceActionRequest.newBuilder()
                         .setHubId(scenario.getHubId())
                         .setScenarioName(scenario.getName())
                         .setTimestamp(timestamp)
@@ -80,7 +79,7 @@ public class SnapshotHandler {
                         .build();
 
                 hubRouterClient.handleDeviceAction(request);
-                log.info("Действие: {}", request);
+                log.info("Отправлено действие: {}", request);
             }
 
         }
@@ -89,12 +88,12 @@ public class SnapshotHandler {
     private boolean checkConditions(List<Condition> conditions, Map<String, SensorStateAvro> sensorStates) {
 
         if (conditions == null || conditions.isEmpty()) {
-            log.info("Нечего проверять");
+            log.info("No conditions to check");
             return true;
         }
 
         if (sensorStates == null || sensorStates.isEmpty()) {
-            log.warn("Состояние сенсора");
+            log.warn("Sensor states are null or empty");
             return false;
         }
 
@@ -105,12 +104,32 @@ public class SnapshotHandler {
 
     private boolean checkCondition(Condition condition, SensorStateAvro sensorStateAvro) {
 
+        if (condition == null) {
+            log.warn("Condition is null");
+            return false;
+        }
+
+        if (sensorStateAvro == null) {
+            log.warn("SensorStateAvro is null for condition: {}", condition);
+            return false;
+        }
+
+        if (sensorStateAvro.getData() == null) {
+            log.warn("Sensor data is null for condition: {}", condition);
+            return false;
+        }
+
         String type = sensorStateAvro.getData().getClass().getName();
         if (!sensorEventHandlers.containsKey(type)) {
-            throw new IllegalArgumentException("Не найден обработчик сенсора: " + type);
+            throw new IllegalArgumentException("Не найден обработчик для сенсора: " + type);
         }
 
         Integer value = sensorEventHandlers.get(type).getSensorValue(condition.getType(), sensorStateAvro);
+
+        if (value == null) {
+            log.warn("Sensor value is null for condition: {}", condition);
+            return false;
+        }
 
         return switch (condition.getOperation()) {
             case ConditionOperation.LOWER_THAN -> value < condition.getValue();
