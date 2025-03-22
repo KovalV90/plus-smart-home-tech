@@ -27,7 +27,7 @@ public class Action {
 
     @ManyToOne
     @JoinColumn(name = "sensor_id")
-    Sensor sensor;
+    private Sensor sensor;
 
     @ManyToMany(mappedBy = "actions")
     private List<Scenario> scenarios;
