@@ -40,10 +40,6 @@ public class HubEventProcessor implements Runnable {
 
     public HubEventProcessor(KafkaConnector kafkaConnector,
                              KafkaProperties kafkaProperties,
-                             ActionRepository actionRepository,
-                             ConditionRepository conditionRepository,
-                             ScenarioRepository scenarioRepository,
-                             SensorRepository sensorRepository,
                              Set<HubEventHandler> hubEventHandlers) {
         this.kafkaConnector = kafkaConnector;
         this.kafkaProperties = kafkaProperties;
