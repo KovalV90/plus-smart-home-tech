@@ -26,10 +26,10 @@ public class AggregationHandler {
     private final KafkaConnector kafkaConnector;
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
-    @Value(value = "${sensorEventTopic}")
+    @Value(value = "${aggregator.kafka.consumer.sensorEventTopic}")
     private String sensorTopic;
 
-    @Value(value = "${hubEventTopic}")
+    @Value(value = "${aggregator.kafka.consumer.hubEventTopic}")
     private String hubTopic;
 
     public void start() {

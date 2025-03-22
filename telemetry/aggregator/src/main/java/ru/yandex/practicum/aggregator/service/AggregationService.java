@@ -33,10 +33,10 @@ public class AggregationService {
     private Producer<String, SpecificRecordBase> producer;
     private Consumer<String, SensorEventAvro> consumer;
 
-    @Value(value = "${snapshotTopic}")
+    @Value(value = "${aggregator.kafka.producer.snapshotTopic}")
     private String snapshotTopic;
 
-    @Value(value = "${pollTimeout}")
+    @Value(value = "${aggregator.kafka.consumer.pollTimeout}")
     private Integer pollTimeout;
 
     @PostConstruct
