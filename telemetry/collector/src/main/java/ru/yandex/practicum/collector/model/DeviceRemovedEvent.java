@@ -1,14 +1,20 @@
 package ru.yandex.practicum.collector.model;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Getter
-@Setter
+
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class DeviceRemovedEvent extends HubEvent {
     @NotBlank
-    private String id;
+    String id;
+
+    @Override
+    public HubEventType getType() {
+        return HubEventType.DEVICE_REMOVED;
+    }
 }
