@@ -5,6 +5,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.Producer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -12,10 +13,11 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import java.time.Duration;
 
 @Configuration
+@ConfigurationProperties(prefix = "aggregator.kafka")
 @RequiredArgsConstructor
 public class AggregatorKafkaConnectorConfig {
 
-    @Value("${aggregator.kafka.closeClientTimeoutSec}")
+    //@Value("${aggregator.kafka.closeClientTimeoutSec}")
     private Integer closeTimeoutSeconds;
 
     private final Producer<String, SpecificRecordBase> aggregatorProducer;

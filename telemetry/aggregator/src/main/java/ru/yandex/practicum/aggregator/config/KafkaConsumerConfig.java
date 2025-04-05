@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.deserializer.SensorEventDeserializer;
@@ -13,15 +14,17 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import java.util.Properties;
 
 @Configuration
+@ConfigurationProperties(prefix = "aggregator.kafka.consumer")
+
 public class KafkaConsumerConfig {
 
-    @Value("${kafkaServer}")
+    //@Value("${kafkaServer}")
     private String bootstrapAddress;
 
-    @Value("${aggregator.kafka.consumer.id}")
+    //@Value("${aggregator.kafka.consumer.id}")
     private String consumerId;
 
-    @Value("${aggregator.kafka.consumer.group}")
+    //@Value("${aggregator.kafka.consumer.group}")
     private String consumerGroupId;
 
     @Bean

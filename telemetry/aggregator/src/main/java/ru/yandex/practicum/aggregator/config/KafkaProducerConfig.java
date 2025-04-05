@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.serializer.GeneralAvroSerializer;
@@ -13,12 +14,14 @@ import ru.yandex.practicum.serializer.GeneralAvroSerializer;
 import java.util.Properties;
 
 @Configuration
+@ConfigurationProperties(prefix = "aggregator.kafka.producer")
+
 public class KafkaProducerConfig {
 
-    @Value("${kafkaServer}")
+    //@Value("${kafkaServer}")
     private String bootstrapAddress;
 
-    @Value("${aggregator.kafka.producer.id}")
+    //@Value("${aggregator.kafka.producer.id}")
     private String producerId;
 
     @Bean
