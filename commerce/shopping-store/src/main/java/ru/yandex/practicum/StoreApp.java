@@ -1,7 +1,7 @@
 package ru.yandex.practicum;
 
-public class Main {
+public class StoreApp {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        System.out.println("StoreApp");
     }
 }
