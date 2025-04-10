@@ -18,16 +18,16 @@ public class ProductMapper {
         if (product == null) {
             return null;
         }
-        ProductDto productDto = new ProductDto();
-        productDto.setProductId(product.getProductId());
-        productDto.setProductName(product.getProductName());
-        productDto.setDescription(product.getDescription());
-        productDto.setImageSrc(product.getImageSrc());
-        productDto.setQuantityState(product.getQuantityState());
-        productDto.setProductCategory(product.getProductCategory());
-        productDto.setProductState(product.getProductState());
-        productDto.setPrice(product.getPrice());
-        return productDto;
+        return ProductDto.builder()
+                .productId(product.getProductId())
+                .productName(product.getProductName())
+                .description(product.getDescription())
+                .imageSrc(product.getImageSrc())
+                .quantityState(product.getQuantityState())
+                .productCategory(product.getProductCategory())
+                .productState(product.getProductState())
+                .price(product.getPrice())
+                .build();
     }
 
 
@@ -45,16 +45,16 @@ public class ProductMapper {
         if (newProductRequest == null) {
             return null;
         }
-        Product product = new Product();
-        product.setProductId(newProductRequest.getProductId());
-        product.setProductName(newProductRequest.getProductName());
-        product.setDescription(newProductRequest.getDescription());
-        product.setImageSrc(newProductRequest.getImageSrc());
-        product.setQuantityState(newProductRequest.getQuantityState());
-        product.setProductCategory(newProductRequest.getProductCategory());
-        product.setProductState(newProductRequest.getProductState());
-        product.setPrice(newProductRequest.getPrice());
-        return product;
+        return Product.builder()
+                .productId(newProductRequest.getProductId())
+                .productName(newProductRequest.getProductName())
+                .description(newProductRequest.getDescription())
+                .imageSrc(newProductRequest.getImageSrc())
+                .quantityState(newProductRequest.getQuantityState())
+                .productCategory(newProductRequest.getProductCategory())
+                .productState(newProductRequest.getProductState())
+                .price(newProductRequest.getPrice())
+                .build();
     }
 
 
@@ -73,16 +73,16 @@ public class ProductMapper {
         if (updateProductRequest == null) {
             return null;
         }
-        Product product = new Product();
-        product.setProductId(updateProductRequest.getProductId());
-        product.setProductName(updateProductRequest.getProductName());
-        product.setDescription(updateProductRequest.getDescription());
-        product.setImageSrc(updateProductRequest.getImageSrc());
-        product.setQuantityState(updateProductRequest.getQuantityState());
-        product.setProductCategory(updateProductRequest.getProductCategory());
-        product.setProductState(updateProductRequest.getProductState());
-        product.setPrice(updateProductRequest.getPrice());
-        return product;
+        return Product.builder()
+                .productId(updateProductRequest.getProductId())
+                .productName(updateProductRequest.getProductName())
+                .description(updateProductRequest.getDescription())
+                .imageSrc(updateProductRequest.getImageSrc())
+                .quantityState(updateProductRequest.getQuantityState())
+                .productCategory(updateProductRequest.getProductCategory())
+                .productState(updateProductRequest.getProductState())
+                .price(updateProductRequest.getPrice())
+                .build();
     }
 
 
