@@ -11,9 +11,9 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SetProductQuantityStateRequest {
 
-    @NotNull
+    @NotNull(message = "Идентификатор товара не может быть null")
     UUID productId;
 
-    @NotNull
+    @NotNull(message = "Статус количества товара не может быть null")
     QuantityState quantityState;
 }

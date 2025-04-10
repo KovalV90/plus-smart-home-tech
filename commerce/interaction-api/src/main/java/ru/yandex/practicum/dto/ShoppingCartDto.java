@@ -1,5 +1,6 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -13,5 +14,6 @@ public class ShoppingCartDto {
 
     UUID shoppingCartId;
 
+    @NotNull(message = "Список товаров не может быть null")
     Map<UUID, Long> products;
 }
