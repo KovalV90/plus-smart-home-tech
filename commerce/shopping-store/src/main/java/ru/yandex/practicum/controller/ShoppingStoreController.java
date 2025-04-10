@@ -4,11 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.ShoppingStoreClient;
+import ru.yandex.practicum.feign.ShoppingStoreApi;
 import ru.yandex.practicum.service.ProductService;
 
 import java.util.List;
@@ -19,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${ShoppingStore.api.prefix}")
-public class ShoppingStoreController implements ShoppingStoreClient {
+public class ShoppingStoreController implements ShoppingStoreApi {
 
     private final ProductService productService;
 
@@ -39,11 +41,21 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductDto> getProductsByCategory(@RequestParam ProductCategory category,
-                                                  @RequestParam Pageable pageable) {
-        log.info(">>> [GET {}] Вход в getProductsByCategory: category={}, pageable={}", prefix, category, pageable);
+    public List<ProductDto> getProductsByCategory(
+            @RequestParam ProductCategory category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) List<String> sort) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort == null || sort.isEmpty() ? Sort.unsorted() : Sort.by(sort.stream().map(Sort.Order::by).toList())
+        );
+
+        log.info(">>> [GET {}] category={}, pageable={}", prefix, category, pageable);
         List<ProductDto> response = productService.getProductsByParams(category, pageable);
-        log.info("<<< [GET {}] Товары получены: {}", prefix, response);
+        log.info("<<< [GET {}] {}", prefix, response);
         return response;
     }
 
