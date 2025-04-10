@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.StoreClient;
+import ru.yandex.practicum.feign.ShoppingStoreClient;
 import ru.yandex.practicum.service.ProductService;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${ShoppingStore.api.prefix}")
-public class ShoppingStoreController implements StoreClient {
+public class ShoppingStoreController implements ShoppingStoreClient {
 
     private final ProductService productService;
 
@@ -60,10 +60,11 @@ public class ShoppingStoreController implements StoreClient {
 
     @PostMapping("/removeProductFromStore")
     @ResponseStatus(HttpStatus.OK)
-    public void removeProductFromStore(@RequestBody UUID id) {
+    public Boolean removeProductFromStore(@RequestBody UUID id) {
         log.info(">>> [POST {}/removeProductFromStore] Вход: id={}", prefix, id);
-        productService.removeProductFromStore(id);
+        Boolean result = productService.removeProductFromStore(id);
         log.info("<<< [POST {}/removeProductFromStore] Товар деактивирован: id={}", prefix, id);
+        return result;
     }
 
 

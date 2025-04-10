@@ -8,7 +8,7 @@ import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.DuplicateProductException;
 import ru.yandex.practicum.exception.NotEnoughProductQuantityException;
 import ru.yandex.practicum.exception.NotFoundException;
-import ru.yandex.practicum.feign.StoreClient;
+import ru.yandex.practicum.feign.ShoppingStoreClient;
 import ru.yandex.practicum.mapper.WarehouseMapper;
 import ru.yandex.practicum.model.WarehouseProduct;
 import ru.yandex.practicum.repository.WarehouseRepository;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
-    private final StoreClient shoppingStoreClient;
+    private final ShoppingStoreClient shoppingStoreClient;
 
     private static final String[] ADDRESSES = new String[]{"ADDRESS_1", "ADDRESS_2"};
     private static final String CURRENT_ADDRESS = ADDRESSES[Random.from(new SecureRandom()).nextInt(0, 1)];

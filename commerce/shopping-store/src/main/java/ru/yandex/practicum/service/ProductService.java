@@ -13,7 +13,7 @@ public interface ProductService {
 
     ProductDto updateProduct(UpdateProductRequest updateProductRequest);
 
-    void removeProductFromStore(UUID id);
+    Boolean removeProductFromStore(UUID id);
 
     void setProductQuantityState(SetProductQuantityStateRequest request);
 

@@ -96,12 +96,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public void removeProductFromStore(UUID id) {
+    public Boolean removeProductFromStore(UUID id) {
         log.info("Запрос на деактивацию продукта с id: {}", id);
         Product existProduct = findOrThrowNotFound(id);
         existProduct.setProductState(ProductState.DEACTIVATE);
         productRepository.save(existProduct);
         log.info("Продукт с id: {} успешно деактивирован", id);
+        return true;
     }
 
 
