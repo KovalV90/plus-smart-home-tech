@@ -5,9 +5,6 @@ import ru.yandex.practicum.model.ShoppingCart;
 
 public class ShoppingCartMapper {
     public static ShoppingCartDto toShoppingCartDto(ShoppingCart shoppingCart) {
-        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
-        shoppingCartDto.setShoppingCartId(shoppingCart.getId());
-        shoppingCartDto.setProducts(shoppingCart.getProducts());
-        return shoppingCartDto;
+        return new ShoppingCartDto(shoppingCart.getId(), shoppingCart.getProducts());
     }
 }
