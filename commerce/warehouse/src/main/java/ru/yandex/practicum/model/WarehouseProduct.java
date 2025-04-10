@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "warehouse_products", schema = "public")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class WarehouseProduct {
     @Id
     UUID productId;

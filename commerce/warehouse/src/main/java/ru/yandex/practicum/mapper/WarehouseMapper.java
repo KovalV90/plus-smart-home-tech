@@ -6,14 +6,14 @@ import ru.yandex.practicum.model.WarehouseProduct;
 public class WarehouseMapper {
 
     public static WarehouseProduct toWarehouseProduct(AddNewProductInWarehouseRequest request) {
-        WarehouseProduct warehouseProduct = new WarehouseProduct();
-        warehouseProduct.setProductId(request.getProductId());
-        warehouseProduct.setFragile(request.isFragile());
-        warehouseProduct.setWeight(request.getWeight());
-        warehouseProduct.setHeight(request.getDimension().getHeight());
-        warehouseProduct.setDepth(request.getDimension().getDepth());
-        warehouseProduct.setWidth(request.getDimension().getWidth());
-        warehouseProduct.setQuantity(0L);
-        return warehouseProduct;
+        return WarehouseProduct.builder()
+                .productId(request.getProductId())
+                .fragile(request.isFragile())
+                .weight(request.getWeight())
+                .height(request.getDimension().getHeight())
+                .depth(request.getDimension().getDepth())
+                .width(request.getDimension().getWidth())
+                .quantity(0L)
+                .build();
     }
 }
