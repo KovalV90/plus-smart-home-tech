@@ -7,14 +7,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.WarehouseClient;
+import ru.yandex.practicum.feign.WarehouseApi;
 import ru.yandex.practicum.service.WarehouseService;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${Warehouse.api.prefix}")
-public class WarehouseController implements WarehouseClient {
+public class WarehouseController implements WarehouseApi {
     private final WarehouseService warehouseService;
 
     @Value("${Warehouse.api.prefix}")
