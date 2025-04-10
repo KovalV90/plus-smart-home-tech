@@ -12,10 +12,10 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddProductToWarehouseRequest {
 
-    @NotNull
+    @NotNull(message = "Идентификатор продукта не может быть null")
     UUID productId;
 
-    @NotNull
+    @NotNull(message = "Количество добавляемого товара обязательно")
     @Min(value = 1, message = "Количество добавляемого товара не может быть меньше 1")
     Long quantity;
 }
