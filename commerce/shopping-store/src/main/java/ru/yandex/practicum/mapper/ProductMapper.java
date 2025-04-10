@@ -7,6 +7,8 @@ import ru.yandex.practicum.model.Product;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 public class ProductMapper {
@@ -30,14 +32,12 @@ public class ProductMapper {
 
 
     public static List<ProductDto> toProductDto(Iterable<Product> products) {
-        List<ProductDto> result = new ArrayList<>();
         if (products == null) {
-            return result;
+            return new ArrayList<>();
         }
-        for (Product product : products) {
-            result.add(toProductDto(product));
-        }
-        return result;
+        return StreamSupport.stream(products.spliterator(), false)
+                .map(ProductMapper::toProductDto)
+                .collect(Collectors.toList());
     }
 
 
@@ -60,14 +60,12 @@ public class ProductMapper {
 
     public static List<Product> toProductsFromUpdateRequest(Iterable<NewProductRequest> products) {
 
-        List<Product> result = new ArrayList<>();
         if (products == null) {
-            return result;
+            return new ArrayList<>();
         }
-        for (NewProductRequest req : products) {
-            result.add(toProduct(req));
-        }
-        return result;
+        return StreamSupport.stream(products.spliterator(), false)
+                .map(ProductMapper::toProduct)
+                .collect(Collectors.toList());
     }
 
 
@@ -89,13 +87,11 @@ public class ProductMapper {
 
 
     public static List<Product> toProduct(Iterable<UpdateProductRequest> products) {
-        List<Product> result = new ArrayList<>();
         if (products == null) {
-            return result;
+            return new ArrayList<>();
         }
-        for (UpdateProductRequest req : products) {
-            result.add(toProduct(req));
-        }
-        return result;
+        return StreamSupport.stream(products.spliterator(), false)
+                .map(ProductMapper::toProduct)
+                .collect(Collectors.toList());
     }
 }
