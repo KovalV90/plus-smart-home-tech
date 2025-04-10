@@ -1,5 +1,7 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -8,8 +10,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookedProductsDto {
 
+    @NotNull(message = "Вес доставки не может быть null")
+    @DecimalMin(value = "0.0", message = "Вес доставки не может быть отрицательным")
     Double deliveryWeight;
 
+    @NotNull(message = "Объём доставки не может быть null")
+    @DecimalMin(value = "0.0", message = "Объём доставки не может быть отрицательным")
     Double deliveryVolume;
 
     boolean fragile;
