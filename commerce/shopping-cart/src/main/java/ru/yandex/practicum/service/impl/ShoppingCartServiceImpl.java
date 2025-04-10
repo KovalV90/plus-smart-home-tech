@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.exception.NotFoundException;
+import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.model.ShoppingCart;
 import ru.yandex.practicum.model.ShoppingCartState;
@@ -22,6 +23,7 @@ import java.util.*;
 public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
+    private final WarehouseClient warehouseClient;
 
     @Override
     public ShoppingCartDto getShoppingCart(String username) {
@@ -51,11 +53,26 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 cart.getProducts().merge(productId, quantity, Long::sum)
         );
 
+
+        ShoppingCartDto dtoForCheck = ShoppingCartMapper.toShoppingCartDto(cart);
+
+
+        try {
+            log.info("Проверка доступности товаров на складе через warehouseClient");
+            warehouseClient.checkProductQuantityEnoughForShoppingCart(dtoForCheck);
+            log.info("Проверка прошла успешно — товары доступны");
+        } catch (Exception e) {
+            log.error("Ошибка при проверке наличия товаров на складе: {}", e.getMessage());
+            throw new RuntimeException("Недостаточное количество товаров на складе: " + e.getMessage(), e);
+        }
+
+
         ShoppingCart savedCart = shoppingCartRepository.save(cart);
         ShoppingCartDto response = ShoppingCartMapper.toShoppingCartDto(savedCart);
         log.info("Товары успешно добавлены. Обновленная корзина: {}", response);
         return response;
     }
+
 
     @Transactional
     @Override

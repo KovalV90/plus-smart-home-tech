@@ -1,9 +1,7 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.dto.ProductCategory;
 import ru.yandex.practicum.dto.ProductState;
@@ -12,10 +10,13 @@ import ru.yandex.practicum.dto.QuantityState;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name = "products", schema = "public")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,23 +24,23 @@ public class Product {
     UUID productId;
 
     @Column(name = "name")
-    private String productName;
+    String productName;
 
     @Column(name = "description")
-    private String description;
+    String description;
 
     @Column(name = "image_src")
-    private String imageSrc;
+    String imageSrc;
 
     @Column(name = "quantity_state")
-    private QuantityState quantityState;
+    QuantityState quantityState;
 
     @Column(name = "product_state")
-    private ProductState productState;
+    ProductState productState;
 
     @Column(name = "product_category")
-    private ProductCategory productCategory;
+    ProductCategory productCategory;
 
     @Column(name = "price")
-    private Double price;
+    Double price;
 }

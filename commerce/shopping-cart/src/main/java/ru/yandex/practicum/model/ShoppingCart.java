@@ -1,16 +1,20 @@
 package ru.yandex.practicum.model;
+
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Map;
 import java.util.UUID;
 
-@Data
+
 @Entity
 @Table(name = "carts", schema = "public")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShoppingCart {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
