@@ -2,6 +2,7 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.dto.ProductCategory;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Data
 @Table(name = "products", schema = "public")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
