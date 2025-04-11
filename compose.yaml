@@ -60,7 +60,7 @@ services:
     image: postgres:16.1
     container_name: db-init
     depends_on:
-      postgres:
+      postgres-analyzer:
         condition: service_healthy
     entrypoint:
       - bash
