@@ -67,6 +67,10 @@ services:
       - -c
       - |
         set -e
+        until pg_isready -h postgres-analyzer -U dbuser; do
+         echo "Waiting for postgres to be ready..."
+         sleep 2
+        done
         psql postgresql://dbuser:12345@postgres-analyzer:5432 -v ON_ERROR_STOP=1 <<-EOSQL
         create database commerce_shopping_cart;
         create database commerce_shopping_store;
