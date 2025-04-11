@@ -1,5 +1,7 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +18,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewProductRequest {
-    @NotNull(message = "Идентификатор продукта обязателен")
     UUID productId;
 
     @NotBlank(message = "Название товара не может быть пустым")
@@ -26,13 +27,13 @@ public class NewProductRequest {
     String description;
 
     String imageSrc;
-
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Состояние остатка товара обязательно")
     QuantityState quantityState;
-
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Статус товара обязателен")
     ProductState productState;
-
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Категория товара обязательна")
     ProductCategory productCategory;
 

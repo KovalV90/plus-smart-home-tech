@@ -2,13 +2,13 @@ package ru.yandex.practicum.feign.impl;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+
 import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.WarehouseClient;
+import ru.yandex.practicum.feign.WarehouseApi;
+
 
 @Slf4j
-@Component
-public class WarehouseClientFallback implements WarehouseClient {
+public class WarehouseClientFallback implements WarehouseApi {
 
     @Override
     public void newProductInWarehouse(AddNewProductInWarehouseRequest request) {

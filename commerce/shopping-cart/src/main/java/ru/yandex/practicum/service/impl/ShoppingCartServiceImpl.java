@@ -90,7 +90,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         log.info("Удаление товаров {} из корзины пользователя {}", productIds, username);
         ShoppingCart cart = findActiveCart(username);
 
-        boolean anyRemoved = productIds.removeIf(id -> cart.getProducts().remove(id) == null);
+        boolean anyRemoved = false;
+        for (UUID id : productIds) {
+            if (cart.getProducts().containsKey(id)) {
+                cart.getProducts().remove(id);
+                anyRemoved = true;
+                log.debug("Удален продукт {} из корзины пользователя {}", id, username);
+            }
+        }
 
         if (!anyRemoved) {
             log.warn("Ни один из указанных продуктов не найден в корзине пользователя: {}", username);

@@ -31,13 +31,13 @@ public class Product {
 
     @Column(name = "image_src")
     String imageSrc;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "quantity_state")
     QuantityState quantityState;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_state")
     ProductState productState;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_category")
     ProductCategory productCategory;
 

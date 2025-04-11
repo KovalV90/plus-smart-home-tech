@@ -1,7 +1,7 @@
 package ru.yandex.practicum.feign;
 
 import feign.FeignException;
-import org.springframework.web.bind.annotation.*;
+
 import ru.yandex.practicum.dto.*;
 
 import java.util.List;
@@ -9,25 +9,19 @@ import java.util.UUID;
 
 public interface ShoppingStoreApi {
 
-    @PostMapping("/quantityState")
-    void setProductQuantityState(@RequestBody SetProductQuantityStateRequest request) throws FeignException;
+    void setProductQuantityState(SetProductQuantityStateRequest request) throws FeignException;
 
-    @GetMapping
     List<ProductDto> getProductsByCategory(
-            @RequestParam("category") ProductCategory category,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size,
-            @RequestParam(value = "sort", required = false) List<String> sort);
+            ProductCategory category,
+            int page,
+            int size,
+            List<String> sort);
 
-    @PutMapping
-    ProductDto createNewProduct(@RequestBody NewProductRequest newProductRequest);
+    ProductDto createNewProduct(NewProductRequest newProductRequest);
 
-    @PostMapping
-    ProductDto updateProduct(@RequestBody UpdateProductRequest updateProductRequest);
+    ProductDto updateProduct(UpdateProductRequest updateProductRequest);
 
-    @PostMapping("/removeProductFromStore")
-    Boolean removeProductFromStore(@RequestBody UUID id);
+    Boolean removeProductFromStore(UUID id);
 
-    @GetMapping("/{productId}")
-    ProductDto getProductById(@PathVariable("productId") UUID productId);
+    ProductDto getProductById(UUID productId);
 }

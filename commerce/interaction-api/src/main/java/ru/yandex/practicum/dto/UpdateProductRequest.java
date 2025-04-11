@@ -1,5 +1,7 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,13 +29,13 @@ public class UpdateProductRequest {
     String description;
 
     String imageSrc;
-
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Состояние остатка обязательно")
     QuantityState quantityState;
-
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Статус продукта обязателен")
     ProductState productState;
-
+    @Enumerated(EnumType.STRING)
     ProductCategory productCategory;
 
     @Min(value = 1, message = "Цена не может быть меньше 1")
