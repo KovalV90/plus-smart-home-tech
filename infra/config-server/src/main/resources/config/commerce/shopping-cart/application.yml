@@ -10,7 +10,7 @@ spring:
     driverClassName: org.postgresql.Driver
     username: dbuser
     password: 12345
-    url: jdbc:postgresql://localhost:6543/shopping_cart
+    url: jdbc:postgresql://localhost:6542/commerce_shopping_cart
   jpa:
     hibernate:
       ddl-auto: none
