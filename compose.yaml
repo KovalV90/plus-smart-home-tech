@@ -55,61 +55,22 @@ services:
       retries: 10
 
 
-  cart-db:
-    image: postgres:16.1
-    container_name: shopping-cart
-    ports:
-      - "6543:5432"
-    volumes:
-      - ./commerce/shopping-cart/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - ./commerce/shopping-cart/src/main/resources/db:/var/lib/postgresql/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - POSTGRES_DB=shopping_cart
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=12345
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
-  store-db:
-    image: postgres:16.1
-    container_name: shopping-store
-    ports:
-      - "6544:5432"
-    volumes:
-      - ./commerce/shopping-store/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - ./commerce/shopping-store/src/main/resources/db:/var/lib/postgresql/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - POSTGRES_DB=shopping_store
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=12345
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
 
-  warehouse-db:
+  db-init:
     image: postgres:16.1
-    container_name: warehouse
-    ports:
-      - "6545:5432"
-    volumes:
-      - ./commerce/warehouse/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - ./commerce/warehouse/src/main/resources/db:/var/lib/postgresql/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - POSTGRES_DB=warehouse
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=12345
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
+    container_name: db-init
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://dbuser:12345@postgres:5432 -v ON_ERROR_STOP=1 <<-EOSQL
+        create database commerce_shopping_cart;
+        create database commerce_shopping_store;
+        create database commerce_warehouse;
+        EOSQL
+
+  
