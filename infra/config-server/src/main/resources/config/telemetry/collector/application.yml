@@ -5,3 +5,5 @@ hubEventTopic: telemetry.hubs.v1
 grpc:
   server:
     port: 59091
+server:
+  port: 0
