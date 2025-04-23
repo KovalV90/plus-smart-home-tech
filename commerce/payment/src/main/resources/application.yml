@@ -12,14 +12,6 @@ spring:
       discovery:
         enabled: true
         serviceId: config-server
-  datasource:
-    url: jdbc:postgresql://localhost:5432/paymentdb
-    username: user
-    password: password
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
 
 server:
   port: 0

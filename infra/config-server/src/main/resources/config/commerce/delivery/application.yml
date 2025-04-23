@@ -1,0 +1,23 @@
+server:
+  port: 0
+
+delivery:
+  api:
+    prefix: /api/v1/delivery
+
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    username: dbuser
+    password: 12345
+    url: jdbc:postgresql://localhost:5432/deliverydb
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  sql:
+    init:
+      mode: always
