@@ -75,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("Создан платёж: {}", payment.getPaymentId());
         // Создаём доставку
         DeliveryDto delivery = DeliveryDto.builder()
-                .address(request.getDeliveryAddress().toString())
+                .address(request.getDeliveryAddress())
                 .orderId(order.getOrderId())
                 .build();
         delivery = deliveryClient.createDelivery(delivery);

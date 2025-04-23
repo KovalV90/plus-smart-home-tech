@@ -28,4 +28,10 @@ public class DeliveryClientFallback implements DeliveryClient {
         log.error("Fallback: markFailed called. Delivery service unavailable.");
         return null;
     }
+
+    @Override
+    public Double calculateDeliveryCost(UUID orderId) {
+        log.error("Fallback: calculateDeliveryCost вызван с orderId {}", orderId);
+        return 0.0;
+    }
 }
