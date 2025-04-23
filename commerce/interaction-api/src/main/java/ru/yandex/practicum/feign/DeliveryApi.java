@@ -11,4 +11,5 @@ public interface DeliveryApi {
     DeliveryDto markDelivered(UUID id);
 
     DeliveryDto markFailed(UUID id);
+    Double calculateDeliveryCost(UUID orderId);
 }

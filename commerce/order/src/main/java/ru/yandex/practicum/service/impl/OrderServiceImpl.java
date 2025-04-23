@@ -1,6 +1,7 @@
 package ru.yandex.practicum.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.NoOrderFoundException;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -26,7 +28,6 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartClient shoppingCartClient;
     private final PaymentClient paymentClient;
     private final DeliveryClient deliveryClient;
-
 
 
     @Override
@@ -47,20 +48,31 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryAddress(String.valueOf(request.getDeliveryAddress()))
                 .state(OrderState.NEW.name())
                 .username(request.getUsername())
-                .productPrice(1.0) // заглушка
                 .build();
 
         // Сохраняем заказ, чтобы получить orderId
         order = repository.save(order);
+        log.info("Создан черновик заказа: {}", order.getOrderId());
+// Запрашиваем стоимость товаров
+        Double productPrice = paymentClient.calculateProductCost(order.getOrderId());
+        order.setProductPrice(productPrice);
+        log.info("Рассчитана стоимость товаров: {}", productPrice);
+
+        // Запрашиваем стоимость доставки
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(order.getOrderId());
+        order.setDeliveryPrice(deliveryPrice);
+        log.info("Рассчитана стоимость доставки: {}", deliveryPrice);
 
         // Создаём платёж
         PaymentDto payment = PaymentDto.builder()
                 .amount(order.getProductPrice())
+                .deliveryPrice(deliveryPrice)
                 .username(order.getUsername())
+                .orderId(order.getOrderId())
                 .build();
         payment = paymentClient.createPayment(payment);
         order.setPaymentId(payment.getPaymentId());
-
+        log.info("Создан платёж: {}", payment.getPaymentId());
         // Создаём доставку
         DeliveryDto delivery = DeliveryDto.builder()
                 .address(request.getDeliveryAddress().toString())
@@ -68,16 +80,16 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         delivery = deliveryClient.createDelivery(delivery);
         order.setDeliveryId(delivery.getId());
-
+        log.info("Создана доставка: {}", delivery.getId());
         // Обновляем заказ с paymentId и deliveryId
         Order savedOrder = repository.save(order);
 
         // Деактивируем корзину
         shoppingCartClient.deactivateShoppingCart(cartId);
+        log.info("Окончательный заказ сохранён: {}", savedOrder.getOrderId());
 
         return mapper.toDto(savedOrder);
     }
-
 
 
     @Override
@@ -120,7 +132,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto calculateDeliveryCost(UUID orderId) {
         Order order = findById(orderId);
-        order.setDeliveryPrice(500.0); // ЗАГЛУШКА
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(orderId);
+        order.setDeliveryPrice(deliveryPrice);
         return mapper.toDto(repository.save(order));
     }
 
@@ -148,4 +161,20 @@ public class OrderServiceImpl implements OrderService {
     private double safe(Double val) {
         return val != null ? val : 0.0;
     }
+
+    @Override
+    public OrderDto paymentSuccess(UUID orderId) {
+        return updateState(orderId, OrderState.PAID);
+    }
+
+    @Override
+    public OrderDto paymentFailed(UUID orderId) {
+        return updateState(orderId, OrderState.PAYMENT_FAILED);
+    }
+    @Override
+    public OrderDto cancelOrder(UUID orderId) {
+        return updateState(orderId, OrderState.CANCELED);
+    }
+
+
 }

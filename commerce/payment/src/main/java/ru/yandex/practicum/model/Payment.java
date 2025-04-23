@@ -26,4 +26,7 @@ public class Payment {
 
     private String username;
 
+    private Double deliveryPrice;
+    private Double totalPrice;
+
 }

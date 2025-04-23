@@ -11,4 +11,5 @@ public interface PaymentApi {
     PaymentDto markPaid(UUID id);
 
     PaymentDto markFailed(UUID id);
+    Double calculateProductCost(UUID orderId);
 }

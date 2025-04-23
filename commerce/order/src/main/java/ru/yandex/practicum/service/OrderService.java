@@ -21,4 +21,8 @@ public interface OrderService {
     OrderDto calculateDeliveryCost(UUID orderId);
     OrderDto markAsAssembled(UUID orderId);
     OrderDto markAsAssemblyFailed(UUID orderId);
+    OrderDto paymentSuccess(UUID orderId);
+    OrderDto paymentFailed(UUID orderId);
+    OrderDto cancelOrder(UUID orderId);
+
 }

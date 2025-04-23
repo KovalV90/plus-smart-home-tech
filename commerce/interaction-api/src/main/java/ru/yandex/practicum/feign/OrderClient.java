@@ -28,4 +28,11 @@ public interface OrderClient extends OrderApi {
     @Override
     @PostMapping("/api/v1/order/completed")
     OrderDto completeOrder(@RequestBody UUID orderId);
+
+    @PostMapping("/api/v1/order/payment/success")
+    OrderDto paymentSuccess(@RequestBody UUID orderId);
+
+    @PostMapping("/api/v1/order/payment/failure")
+    OrderDto paymentFailed(@RequestBody UUID orderId);
+
 }

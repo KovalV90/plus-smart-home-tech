@@ -21,4 +21,8 @@ public interface PaymentClient extends PaymentApi {
     @Override
     @PostMapping("/api/v1/payment/failed")
     PaymentDto markFailed(@RequestBody UUID id);
+    @Override
+    @GetMapping("/api/v1/payment/product-cost/{orderId}")
+    Double calculateProductCost(@PathVariable("orderId") UUID orderId);
+
 }

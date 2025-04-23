@@ -21,4 +21,9 @@ public interface DeliveryClient extends DeliveryApi {
     @Override
     @PostMapping("/api/v1/delivery/failed")
     DeliveryDto markFailed(@RequestBody UUID id);
+
+    @Override
+    @GetMapping("/api/v1/delivery/cost/{orderId}")
+    Double calculateDeliveryCost(@PathVariable("orderId") UUID orderId);
+
 }

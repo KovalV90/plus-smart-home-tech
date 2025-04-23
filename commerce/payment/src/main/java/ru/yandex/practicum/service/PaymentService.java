@@ -6,6 +6,10 @@ import java.util.UUID;
 
 public interface PaymentService {
     PaymentDto getById(UUID id);
+
     PaymentDto markAsPaid(UUID id);
+
     PaymentDto markAsFailed(UUID id);
+
+    PaymentDto createPayment(PaymentDto dto);
 }

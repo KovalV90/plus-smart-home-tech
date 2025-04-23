@@ -76,4 +76,14 @@ public class OrderController {
     public ResponseEntity<OrderDto> assemblyFailed(@RequestBody UUID orderId) {
         return ResponseEntity.ok(orderService.markAsAssemblyFailed(orderId));
     }
+    @PostMapping("/payment/success")
+    public ResponseEntity<OrderDto> paymentSuccess(@RequestBody UUID orderId) {
+        return ResponseEntity.ok(orderService.paymentSuccess(orderId));
+    }
+    @PostMapping("/cancel")
+    public ResponseEntity<OrderDto> cancelOrder(@RequestBody UUID orderId) {
+        return ResponseEntity.ok(orderService.cancelOrder(orderId));
+    }
+
+
 }

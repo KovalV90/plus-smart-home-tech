@@ -9,5 +9,6 @@ public enum OrderState {
     DELIVERED,
     DELIVERY_FAILED,
     COMPLETED,
-    PRODUCT_RETURNED
+    PRODUCT_RETURNED,
+    CANCELED
 }
