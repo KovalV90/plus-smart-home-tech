@@ -29,4 +29,9 @@ public class DeliveryController {
     public ResponseEntity<DeliveryDto> fail(@PathVariable UUID id) {
         return ResponseEntity.ok(service.markFailed(id));
     }
+    @GetMapping("/cost/{orderId}")
+    public ResponseEntity<Double> getCost(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(service.calculateDeliveryCost(orderId));
+    }
+
 }

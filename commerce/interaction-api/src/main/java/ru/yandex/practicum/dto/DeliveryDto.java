@@ -11,7 +11,13 @@ import java.util.UUID;
 @Builder
 public class DeliveryDto {
     private UUID id;
-    private String address;
+    private AddressDto address;
+    private AddressDto fromAddress;
     private String state;
     private UUID orderId;
+
+    private double weight;
+    private double volume;
+    private boolean fragile;
+
 }
