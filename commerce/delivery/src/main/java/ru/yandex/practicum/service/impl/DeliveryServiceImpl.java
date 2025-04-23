@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.exception.DeliveryNotFoundException;
+import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.DeliveryMapper;
 import ru.yandex.practicum.model.Delivery;
 import ru.yandex.practicum.model.DeliveryState;
@@ -18,6 +19,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository repository;
     private final DeliveryMapper mapper;
+    private final WarehouseClient warehouseClient;
 
     @Override
     public DeliveryDto createDelivery(DeliveryDto dto) {
@@ -39,11 +41,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setState(DeliveryState.FAILED);
         return mapper.toDto(repository.save(delivery));
     }
+
     @Override
     public DeliveryDto markInProgress(UUID id) {
         Delivery delivery = findByIdOrThrow(id);
         delivery.setState(DeliveryState.IN_PROGRESS);
-        return mapper.toDto(repository.save(delivery));
+        DeliveryDto dto = mapper.toDto(repository.save(delivery));
+        warehouseClient.shippedToDelivery(dto.getOrderId(), dto.getId());
+        return dto;
     }
 
     @Override
@@ -79,6 +84,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         return result;
     }
+
     private Delivery findByIdOrThrow(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new DeliveryNotFoundException("Delivery не найдена(id): " + id));

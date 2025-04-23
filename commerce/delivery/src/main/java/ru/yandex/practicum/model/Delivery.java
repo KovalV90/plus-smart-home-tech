@@ -19,11 +19,8 @@ public class Delivery {
 
     @Embedded
     private Address address;
-    @Enumerated(EnumType.STRING)
 
 
-
-    private String fromStreet;
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "country", column = @Column(name = "from_country")),
@@ -33,14 +30,7 @@ public class Delivery {
             @AttributeOverride(name = "flat", column = @Column(name = "from_flat"))
     })
     private Address fromAddress;
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "country", column = @Column(name = "from_country")),
-            @AttributeOverride(name = "city", column = @Column(name = "from_city")),
-            @AttributeOverride(name = "street", column = @Column(name = "from_street")),
-            @AttributeOverride(name = "house", column = @Column(name = "from_house")),
-            @AttributeOverride(name = "flat", column = @Column(name = "from_flat"))
-    })
+
     @Enumerated(EnumType.STRING)
     private DeliveryState state;
 

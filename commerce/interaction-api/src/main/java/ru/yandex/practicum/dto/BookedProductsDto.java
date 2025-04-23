@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -23,4 +26,6 @@ public class BookedProductsDto {
     Double deliveryVolume;
 
     boolean fragile;
+    Map<UUID, Long> products;
+
 }

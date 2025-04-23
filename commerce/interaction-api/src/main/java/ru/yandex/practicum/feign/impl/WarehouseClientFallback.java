@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.feign.WarehouseApi;
 
+import java.util.UUID;
+
 
 @Slf4j
 public class WarehouseClientFallback implements WarehouseApi {
@@ -44,4 +46,20 @@ public class WarehouseClientFallback implements WarehouseApi {
         address.setFlat("-");
         return address;
     }
+
+    @Override
+    public void assemblyProductForOrderFromShoppingCart(ShoppingCartDto cart) {
+
+    }
+
+    @Override
+    public void returnProducts(BookedProductsDto bookedProducts) {
+
+    }
+
+    @Override
+    public void shippedToDelivery(UUID orderId, UUID deliveryId) {
+
+    }
+
 }

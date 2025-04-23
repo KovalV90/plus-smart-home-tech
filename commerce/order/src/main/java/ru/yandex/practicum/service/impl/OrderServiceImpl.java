@@ -8,6 +8,7 @@ import ru.yandex.practicum.exception.NoOrderFoundException;
 import ru.yandex.practicum.feign.DeliveryClient;
 import ru.yandex.practicum.feign.PaymentClient;
 import ru.yandex.practicum.feign.ShoppingCartClient;
+import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
 import ru.yandex.practicum.model.OrderState;
@@ -28,7 +29,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartClient shoppingCartClient;
     private final PaymentClient paymentClient;
     private final DeliveryClient deliveryClient;
-
+    private final WarehouseClient warehouseClient;
 
     @Override
     public List<OrderDto> getClientOrders(String username) {
@@ -41,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         UUID cartId = request.getShoppingCart().getShoppingCartId();
         ShoppingCartDto cart = shoppingCartClient.getShoppingCartById(cartId);
 
-        // Создаём первоначальный заказ
+        // Создаём черновик заказа
         Order order = Order.builder()
                 .shoppingCartId(cart.getShoppingCartId())
                 .products(cart.getProducts())
@@ -53,17 +54,26 @@ public class OrderServiceImpl implements OrderService {
         // Сохраняем заказ, чтобы получить orderId
         order = repository.save(order);
         log.info("Создан черновик заказа: {}", order.getOrderId());
-// Запрашиваем стоимость товаров
+
+        // 🔧 Сборка заказа на складе
+        warehouseClient.assemblyProductForOrderFromShoppingCart(cart);
+        log.info("Заказ передан на сборку на склад: {}", order.getOrderId());
+
+        // 🔧 Получаем адрес склада (откуда)
+        AddressDto warehouseAddress = warehouseClient.getWarehouseAddress();
+        log.info("Адрес склада получен: {}", warehouseAddress);
+
+        // 🔧 Расчёт стоимости товаров
         Double productPrice = paymentClient.calculateProductCost(order.getOrderId());
         order.setProductPrice(productPrice);
         log.info("Рассчитана стоимость товаров: {}", productPrice);
 
-        // Запрашиваем стоимость доставки
+        // 🔧 Расчёт стоимости доставки
         Double deliveryPrice = deliveryClient.calculateDeliveryCost(order.getOrderId());
         order.setDeliveryPrice(deliveryPrice);
         log.info("Рассчитана стоимость доставки: {}", deliveryPrice);
 
-        // Создаём платёж
+        // 🔧 Создаём платёж
         PaymentDto payment = PaymentDto.builder()
                 .amount(order.getProductPrice())
                 .deliveryPrice(deliveryPrice)
@@ -73,20 +83,23 @@ public class OrderServiceImpl implements OrderService {
         payment = paymentClient.createPayment(payment);
         order.setPaymentId(payment.getPaymentId());
         log.info("Создан платёж: {}", payment.getPaymentId());
-        // Создаём доставку
+
+        // 🔧 Создаём доставку
         DeliveryDto delivery = DeliveryDto.builder()
                 .address(request.getDeliveryAddress())
+                .fromAddress(warehouseAddress) // Устанавливаем адрес склада
                 .orderId(order.getOrderId())
                 .build();
         delivery = deliveryClient.createDelivery(delivery);
         order.setDeliveryId(delivery.getId());
         log.info("Создана доставка: {}", delivery.getId());
-        // Обновляем заказ с paymentId и deliveryId
+
+        // 🔧 Сохраняем финальный заказ
         Order savedOrder = repository.save(order);
 
-        // Деактивируем корзину
+        // 🔧 Деактивируем корзину
         shoppingCartClient.deactivateShoppingCart(cartId);
-        log.info("Окончательный заказ сохранён: {}", savedOrder.getOrderId());
+        log.info("Корзина деактивирована, заказ завершён: {}", savedOrder.getOrderId());
 
         return mapper.toDto(savedOrder);
     }
@@ -171,6 +184,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto paymentFailed(UUID orderId) {
         return updateState(orderId, OrderState.PAYMENT_FAILED);
     }
+
     @Override
     public OrderDto cancelOrder(UUID orderId) {
         return updateState(orderId, OrderState.CANCELED);

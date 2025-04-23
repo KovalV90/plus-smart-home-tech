@@ -10,6 +10,8 @@ import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.feign.WarehouseApi;
 import ru.yandex.practicum.service.WarehouseService;
 
+import java.util.UUID;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -56,4 +58,33 @@ public class WarehouseController implements WarehouseApi {
         warehouseService.addProductToWarehouse(request);
         log.info("<<< [POST {}/add] Завершение пополнения остатков товара. Request = {}", prefix, request);
     }
+
+    @Override
+    @PostMapping("/assembly")
+    @ResponseStatus(HttpStatus.OK)
+    public void assemblyProductForOrderFromShoppingCart(@RequestBody ShoppingCartDto cart) {
+        log.info(">>> [POST {}/assembly] Начало сборки товаров по корзине: {}", prefix, cart);
+        warehouseService.assemblyProductForOrderFromShoppingCart(cart);
+        log.info("<<< [POST {}/assembly] Завершение сборки товаров");
+    }
+
+    @Override
+    @PostMapping("/return")
+    @ResponseStatus(HttpStatus.OK)
+    public void returnProducts(@RequestBody BookedProductsDto bookedProducts) {
+        log.info(">>> [POST {}/return] Начало возврата товаров на склад: {}", prefix, bookedProducts);
+        warehouseService.returnProducts(bookedProducts);
+        log.info("<<< [POST {}/return] Завершение возврата товаров на склад");
+
+    }
+
+    @PostMapping("/shipped/{orderId}/{deliveryId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void shippedToDelivery(@PathVariable UUID orderId, @PathVariable UUID deliveryId) {
+        log.info(">>> [POST {}/shipped] Передача в доставку: orderId = {}, deliveryId = {}", prefix, orderId, deliveryId);
+        warehouseService.shippedToDelivery(orderId, deliveryId);
+        log.info("<<< [POST {}/shipped] Передача завершена", prefix);
+    }
+
+
 }
