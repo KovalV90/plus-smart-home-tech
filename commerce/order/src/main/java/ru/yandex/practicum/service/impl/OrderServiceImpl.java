@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.NoOrderFoundException;
+import ru.yandex.practicum.feign.DeliveryClient;
+import ru.yandex.practicum.feign.PaymentClient;
+import ru.yandex.practicum.feign.ShoppingCartClient;
 import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
 import ru.yandex.practicum.model.OrderState;
@@ -20,6 +23,11 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository repository;
     private final OrderMapper mapper;
+    private final ShoppingCartClient shoppingCartClient;
+    private final PaymentClient paymentClient;
+    private final DeliveryClient deliveryClient;
+
+
 
     @Override
     public List<OrderDto> getClientOrders(String username) {
@@ -29,15 +37,48 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto createOrder(CreateNewOrderRequest request) {
+        UUID cartId = request.getShoppingCart().getShoppingCartId();
+        ShoppingCartDto cart = shoppingCartClient.getShoppingCartById(cartId);
+
+        // Создаём первоначальный заказ
         Order order = Order.builder()
-                .shoppingCartId(request.getShoppingCart().getShoppingCartId())
-                .products(request.getShoppingCart().getProducts())
-                .deliveryAddress(request.getDeliveryAddress().toString())
+                .shoppingCartId(cart.getShoppingCartId())
+                .products(cart.getProducts())
+                .deliveryAddress(String.valueOf(request.getDeliveryAddress()))
                 .state(OrderState.NEW.name())
                 .username(request.getUsername())
+                .productPrice(1.0) // заглушка
                 .build();
-        return mapper.toDto(repository.save(order));
+
+        // Сохраняем заказ, чтобы получить orderId
+        order = repository.save(order);
+
+        // Создаём платёж
+        PaymentDto payment = PaymentDto.builder()
+                .amount(order.getProductPrice())
+                .username(order.getUsername())
+                .build();
+        payment = paymentClient.createPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
+
+        // Создаём доставку
+        DeliveryDto delivery = DeliveryDto.builder()
+                .address(request.getDeliveryAddress().toString())
+                .orderId(order.getOrderId())
+                .build();
+        delivery = deliveryClient.createDelivery(delivery);
+        order.setDeliveryId(delivery.getId());
+
+        // Обновляем заказ с paymentId и deliveryId
+        Order savedOrder = repository.save(order);
+
+        // Деактивируем корзину
+        shoppingCartClient.deactivateShoppingCart(cartId);
+
+        return mapper.toDto(savedOrder);
     }
+
+
 
     @Override
     public OrderDto returnProducts(ProductReturnRequest request) {
