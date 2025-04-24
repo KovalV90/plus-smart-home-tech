@@ -22,22 +22,22 @@ public class DeliveryController {
     }
 
     @PostMapping("/successful")
-    public ResponseEntity<DeliveryDto> success(@RequestBody UUID id) {
+    public ResponseEntity<DeliveryDto> markDelivered(@RequestBody UUID id) {
         return ResponseEntity.ok(service.markDelivered(id));
     }
 
     @PostMapping("/failed")
-    public ResponseEntity<DeliveryDto> fail(@RequestBody UUID id) {
+    public ResponseEntity<DeliveryDto> markFailed(@RequestBody UUID id) {
         return ResponseEntity.ok(service.markFailed(id));
     }
 
     @GetMapping("/cost")
-    public ResponseEntity<Double> cost(@RequestBody OrderDto orderDto) {
+    public ResponseEntity<Double> calculateDeliveryCost(@RequestBody OrderDto orderDto) {
         return ResponseEntity.ok(service.calculateDeliveryCost(orderDto));
     }
 
-    @PostMapping("/piked")
-    public ResponseEntity<DeliveryDto> picked(@RequestBody UUID id) {
+    @PostMapping("/picked")
+    public ResponseEntity<DeliveryDto> markPicked(@RequestBody UUID id) {
         return ResponseEntity.ok(service.markInProgress(id));
     }
 
