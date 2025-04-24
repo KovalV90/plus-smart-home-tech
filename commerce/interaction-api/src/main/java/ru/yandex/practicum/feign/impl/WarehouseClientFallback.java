@@ -49,17 +49,17 @@ public class WarehouseClientFallback implements WarehouseApi {
 
     @Override
     public void assemblyProductForOrderFromShoppingCart(ShoppingCartDto cart) {
-
+        log.warn("Fallback: сервис склада недоступен. Не удалось собрать товары для заказа из корзины: {}", cart.getShoppingCartId());
     }
 
     @Override
     public void returnProducts(BookedProductsDto bookedProducts) {
-
+        log.warn("Fallback: сервис склада недоступен. Не удалось вернуть товары на склад.");
     }
 
     @Override
     public void shippedToDelivery(UUID orderId, UUID deliveryId) {
-
+        log.warn("Fallback: сервис склада недоступен. Заказ {} не может быть передан на доставку (deliveryId: {}).", orderId, deliveryId);
     }
 
 }

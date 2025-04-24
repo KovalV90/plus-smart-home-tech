@@ -19,11 +19,13 @@ public class PaymentClientFallback implements PaymentApi {
 
     @Override
     public PaymentDto paymentSuccess(UUID paymentId) {
+        log.error("Fallback: вызов paymentSuccess для платежа {}. Сервис оплаты недоступен.", paymentId);
         return null;
     }
 
     @Override
     public PaymentDto paymentFailed(UUID paymentId) {
+        log.error("Fallback: вызов paymentFailed для платежа {}. Сервис оплаты недоступен.", paymentId);
         return null;
     }
 
@@ -36,6 +38,7 @@ public class PaymentClientFallback implements PaymentApi {
 
     @Override
     public Double calculateTotalCost(UUID orderId) {
+        log.error("Fallback: ошибка при расчёте общей стоимости заказа {}. Сервис оплаты недоступен.", orderId);
         return 0.0;
     }
 }

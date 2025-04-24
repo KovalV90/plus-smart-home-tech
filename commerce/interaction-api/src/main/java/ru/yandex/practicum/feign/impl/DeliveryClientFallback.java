@@ -33,12 +33,14 @@ public class DeliveryClientFallback implements DeliveryClient {
 
     @Override
     public Double calculateDeliveryCost(OrderDto orderDto) {
+        log.error("Fallback: вызов calculateDeliveryCost. Сервис доставки недоступен.");
         return 0.0;
     }
 
 
     @Override
     public DeliveryDto markPicked(UUID orderId) {
+        log.error("Fallback: вызов markPicked для заказа {}. Сервис доставки недоступен.", orderId);
         return null;
     }
 
