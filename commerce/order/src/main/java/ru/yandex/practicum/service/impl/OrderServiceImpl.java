@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         UUID cartId = request.getShoppingCart().getShoppingCartId();
         ShoppingCartDto cart = shoppingCartClient.getShoppingCartById(cartId);
 
-        // Создаём черновик заказа
+
         Order order = Order.builder()
                 .shoppingCartId(cart.getShoppingCartId())
                 .products(cart.getProducts())
@@ -51,29 +51,24 @@ public class OrderServiceImpl implements OrderService {
                 .username(request.getUsername())
                 .build();
 
-        // Сохраняем заказ, чтобы получить orderId
         order = repository.save(order);
         log.info("Создан черновик заказа: {}", order.getOrderId());
 
-        // 🔧 Сборка заказа на складе
         warehouseClient.assemblyProductForOrderFromShoppingCart(cart);
         log.info("Заказ передан на сборку на склад: {}", order.getOrderId());
 
-        // 🔧 Получаем адрес склада (откуда)
         AddressDto warehouseAddress = warehouseClient.getWarehouseAddress();
         log.info("Адрес склада получен: {}", warehouseAddress);
 
-        // 🔧 Расчёт стоимости товаров
         Double productPrice = paymentClient.calculateProductCost(order.getOrderId());
         order.setProductPrice(productPrice);
         log.info("Рассчитана стоимость товаров: {}", productPrice);
 
-        // 🔧 Расчёт стоимости доставки
-        Double deliveryPrice = deliveryClient.calculateDeliveryCost(order.getOrderId());
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
+
         order.setDeliveryPrice(deliveryPrice);
         log.info("Рассчитана стоимость доставки: {}", deliveryPrice);
 
-        // 🔧 Создаём платёж
         PaymentDto payment = PaymentDto.builder()
                 .amount(order.getProductPrice())
                 .deliveryPrice(deliveryPrice)
@@ -84,20 +79,17 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentId(payment.getPaymentId());
         log.info("Создан платёж: {}", payment.getPaymentId());
 
-        // 🔧 Создаём доставку
         DeliveryDto delivery = DeliveryDto.builder()
                 .address(request.getDeliveryAddress())
-                .fromAddress(warehouseAddress) // Устанавливаем адрес склада
+                .fromAddress(warehouseAddress)
                 .orderId(order.getOrderId())
                 .build();
         delivery = deliveryClient.createDelivery(delivery);
         order.setDeliveryId(delivery.getId());
         log.info("Создана доставка: {}", delivery.getId());
 
-        // 🔧 Сохраняем финальный заказ
         Order savedOrder = repository.save(order);
 
-        // 🔧 Деактивируем корзину
         shoppingCartClient.deactivateShoppingCart(cartId);
         log.info("Корзина деактивирована, заказ завершён: {}", savedOrder.getOrderId());
 
@@ -145,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto calculateDeliveryCost(UUID orderId) {
         Order order = findById(orderId);
-        Double deliveryPrice = deliveryClient.calculateDeliveryCost(orderId);
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
         order.setDeliveryPrice(deliveryPrice);
         return mapper.toDto(repository.save(order));
     }
