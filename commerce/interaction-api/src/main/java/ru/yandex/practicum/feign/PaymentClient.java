@@ -15,14 +15,19 @@ public interface PaymentClient extends PaymentApi {
     PaymentDto createPayment(@RequestBody PaymentDto dto);
 
     @Override
-    @PostMapping("/api/v1/payment/paid")
-    PaymentDto markPaid(@RequestBody UUID id);
+    @PostMapping("/api/v1/payment/refund")
+    PaymentDto paymentSuccess(@RequestBody UUID paymentId);
 
     @Override
     @PostMapping("/api/v1/payment/failed")
-    PaymentDto markFailed(@RequestBody UUID id);
+    PaymentDto paymentFailed(@RequestBody UUID paymentId);
+
     @Override
-    @GetMapping("/api/v1/payment/product-cost/{orderId}")
-    Double calculateProductCost(@PathVariable("orderId") UUID orderId);
+    @PostMapping("/api/v1/payment/productCost")
+    Double calculateProductCost(@RequestBody UUID orderId);
+
+    @Override
+    @PostMapping("/api/v1/payment/totalCost")
+    Double calculateTotalCost(@RequestBody UUID orderId);
 
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.feign;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.DeliveryDto;
+import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.feign.impl.DeliveryClientFallback;
 
 import java.util.UUID;
@@ -15,15 +16,19 @@ public interface DeliveryClient extends DeliveryApi {
     DeliveryDto createDelivery(@RequestBody DeliveryDto dto);
 
     @Override
-    @PostMapping("/api/v1/delivery/delivered")
-    DeliveryDto markDelivered(@RequestBody UUID id);
+    @PostMapping("/api/v1/delivery/successful")
+    DeliveryDto markDelivered(@RequestBody UUID orderId);
 
     @Override
     @PostMapping("/api/v1/delivery/failed")
-    DeliveryDto markFailed(@RequestBody UUID id);
+    DeliveryDto markFailed(@RequestBody UUID orderId);
 
     @Override
-    @GetMapping("/api/v1/delivery/cost/{orderId}")
-    Double calculateDeliveryCost(@PathVariable("orderId") UUID orderId);
+    @GetMapping("/api/v1/delivery/cost")
+    Double calculateDeliveryCost(@RequestBody OrderDto orderDto);
+
+    @Override
+    @PostMapping("/api/v1/delivery/picked")
+    DeliveryDto markPicked(@RequestBody UUID orderId);
 
 }

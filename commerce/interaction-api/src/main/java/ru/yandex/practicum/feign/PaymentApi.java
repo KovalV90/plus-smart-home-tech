@@ -8,8 +8,9 @@ public interface PaymentApi {
 
     PaymentDto createPayment(PaymentDto dto);
 
-    PaymentDto markPaid(UUID id);
-
-    PaymentDto markFailed(UUID id);
+    PaymentDto paymentSuccess(UUID paymentId);
+    PaymentDto paymentFailed(UUID paymentId);
     Double calculateProductCost(UUID orderId);
+
+    Double calculateTotalCost(UUID orderId);
 }

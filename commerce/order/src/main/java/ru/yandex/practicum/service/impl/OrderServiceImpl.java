@@ -11,7 +11,7 @@ import ru.yandex.practicum.feign.ShoppingCartClient;
 import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
-import ru.yandex.practicum.model.OrderState;
+import ru.yandex.practicum.dto.OrderState;
 import ru.yandex.practicum.repository.OrderRepository;
 import ru.yandex.practicum.service.OrderService;
 

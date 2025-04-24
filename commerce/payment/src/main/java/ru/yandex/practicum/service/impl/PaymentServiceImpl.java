@@ -21,12 +21,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final OrderClient orderClient;
-    private final ShoppingStoreClient shoppingStoreClient;
 
-    @Override
-    public PaymentDto getById(UUID id) {
-        return paymentMapper.toDto(findById(id));
-    }
 
     @Override
     public PaymentDto createPayment(PaymentDto dto) {
@@ -49,16 +44,30 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PaymentDto markAsPaid(UUID id) {
-        Payment payment = findById(id);
+    public Double calculateProductCost(UUID orderId) {
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new NoPaymentFoundException("Платеж не найден для заказа: " + orderId));
+        return safe(payment.getAmount());
+    }
+
+    @Override
+    public Double calculateTotalCost(UUID orderId) {
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new NoPaymentFoundException("Платеж не найден для заказа: " + orderId));
+        return safe(payment.getTotalPrice());
+    }
+
+    @Override
+    public PaymentDto paymentSuccess(UUID paymentId) {
+        Payment payment = findById(paymentId);
         payment.setStatus(PaymentStatus.PAID.name());
         orderClient.paymentSuccess(payment.getOrderId());
         return paymentMapper.toDto(paymentRepository.save(payment));
     }
 
     @Override
-    public PaymentDto markAsFailed(UUID id) {
-        Payment payment = findById(id);
+    public PaymentDto paymentFailed(UUID paymentId) {
+        Payment payment = findById(paymentId);
         payment.setStatus(PaymentStatus.FAILED.name());
         orderClient.paymentFailed(payment.getOrderId());
         return paymentMapper.toDto(paymentRepository.save(payment));

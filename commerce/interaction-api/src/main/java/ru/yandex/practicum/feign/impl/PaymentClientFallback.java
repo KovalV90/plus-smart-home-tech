@@ -18,20 +18,24 @@ public class PaymentClientFallback implements PaymentApi {
     }
 
     @Override
-    public PaymentDto markPaid(UUID id) {
-        log.error("Fallback: markPaid called for {}", id);
+    public PaymentDto paymentSuccess(UUID paymentId) {
         return null;
     }
 
     @Override
-    public PaymentDto markFailed(UUID id) {
-        log.error("Fallback: markFailed called for {}", id);
+    public PaymentDto paymentFailed(UUID paymentId) {
         return null;
     }
+
 
     @Override
     public Double calculateProductCost(UUID orderId) {
         log.error("Fallback: Ошибка при расчёте стоимости товаров по заказу {}", orderId);
+        return 0.0;
+    }
+
+    @Override
+    public Double calculateTotalCost(UUID orderId) {
         return 0.0;
     }
 }

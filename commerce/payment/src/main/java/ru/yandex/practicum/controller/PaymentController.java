@@ -15,18 +15,29 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PaymentDto> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(paymentService.getById(id));
+    @PostMapping
+    public ResponseEntity<PaymentDto> createPayment(@RequestBody PaymentDto dto) {
+        return ResponseEntity.ok(paymentService.createPayment(dto));
     }
 
-    @PostMapping("/{id}/paid")
-    public ResponseEntity<PaymentDto> markAsPaid(@PathVariable UUID id) {
-        return ResponseEntity.ok(paymentService.markAsPaid(id));
+    @PostMapping("/productCost")
+    public ResponseEntity<Double> calculateProductCost(@RequestBody UUID orderId) {
+        return ResponseEntity.ok(paymentService.calculateProductCost(orderId));
     }
 
-    @PostMapping("/{id}/failed")
-    public ResponseEntity<PaymentDto> markAsFailed(@PathVariable UUID id) {
-        return ResponseEntity.ok(paymentService.markAsFailed(id));
+
+    @PostMapping("/totalCost")
+    public ResponseEntity<Double> calculateTotalCost(@RequestBody UUID orderId) {
+        return ResponseEntity.ok(paymentService.calculateTotalCost(orderId));
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<PaymentDto> paymentSuccess(@RequestBody UUID paymentId) {
+        return ResponseEntity.ok(paymentService.paymentSuccess(paymentId));
+    }
+
+    @PostMapping("/failed")
+    public ResponseEntity<PaymentDto> paymentFailed(@RequestBody UUID paymentId) {
+        return ResponseEntity.ok(paymentService.paymentFailed(paymentId));
     }
 }

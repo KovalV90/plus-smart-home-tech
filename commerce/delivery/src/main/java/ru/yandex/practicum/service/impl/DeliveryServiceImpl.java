@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.DeliveryDto;
+import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.exception.DeliveryNotFoundException;
 import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.DeliveryMapper;
@@ -59,7 +60,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    public Double calculateDeliveryCost(UUID orderId) {
+    public Double calculateDeliveryCost(OrderDto orderDto) {
+        UUID orderId = orderDto.getOrderId();
         Delivery delivery = repository.findByOrderId(orderId)
                 .orElseThrow(() -> new DeliveryNotFoundException("Delivery не найдена по orderId: " + orderId));
 
