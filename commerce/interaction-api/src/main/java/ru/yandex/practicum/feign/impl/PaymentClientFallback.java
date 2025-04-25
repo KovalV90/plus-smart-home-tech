@@ -3,13 +3,13 @@ package ru.yandex.practicum.feign.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.PaymentDto;
-import ru.yandex.practicum.feign.PaymentApi;
+import ru.yandex.practicum.feign.PaymentClient;
 
 import java.util.UUID;
 
 @Slf4j
 @Component
-public class PaymentClientFallback implements PaymentApi {
+public class PaymentClientFallback implements PaymentClient {
 
     @Override
     public PaymentDto createPayment(PaymentDto dto) {

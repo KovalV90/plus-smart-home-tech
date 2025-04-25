@@ -8,25 +8,23 @@ import ru.yandex.practicum.feign.impl.PaymentClientFallback;
 import java.util.UUID;
 
 @FeignClient(name = "payment", fallback = PaymentClientFallback.class)
-public interface PaymentClient extends PaymentApi {
+public interface PaymentClient {
 
-    @Override
+
     @PutMapping("/api/v1/payment")
     PaymentDto createPayment(@RequestBody PaymentDto dto);
 
-    @Override
+
     @PostMapping("/api/v1/payment/refund")
     PaymentDto paymentSuccess(@RequestBody UUID paymentId);
 
-    @Override
     @PostMapping("/api/v1/payment/failed")
     PaymentDto paymentFailed(@RequestBody UUID paymentId);
 
-    @Override
+
     @PostMapping("/api/v1/payment/productCost")
     Double calculateProductCost(@RequestBody UUID orderId);
 
-    @Override
     @PostMapping("/api/v1/payment/totalCost")
     Double calculateTotalCost(@RequestBody UUID orderId);
 

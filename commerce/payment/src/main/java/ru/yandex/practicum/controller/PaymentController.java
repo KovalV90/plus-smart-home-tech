@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.PaymentDto;
+import ru.yandex.practicum.feign.PaymentClient;
 import ru.yandex.practicum.service.PaymentService;
 
 import java.util.UUID;
@@ -11,33 +12,37 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/payment")
 @RequiredArgsConstructor
-public class PaymentController {
+public class PaymentController implements PaymentClient {
 
     private final PaymentService paymentService;
 
-    @PostMapping
-    public ResponseEntity<PaymentDto> createPayment(@RequestBody PaymentDto dto) {
-        return ResponseEntity.ok(paymentService.createPayment(dto));
+    @Override
+    @PutMapping
+    public PaymentDto createPayment(@RequestBody PaymentDto dto) {
+        return paymentService.createPayment(dto);
     }
 
+    @Override
     @PostMapping("/productCost")
-    public ResponseEntity<Double> calculateProductCost(@RequestBody UUID orderId) {
-        return ResponseEntity.ok(paymentService.calculateProductCost(orderId));
+    public Double calculateProductCost(@RequestBody UUID orderId) {
+        return paymentService.calculateProductCost(orderId);
     }
 
-
+    @Override
     @PostMapping("/totalCost")
-    public ResponseEntity<Double> calculateTotalCost(@RequestBody UUID orderId) {
-        return ResponseEntity.ok(paymentService.calculateTotalCost(orderId));
+    public Double calculateTotalCost(@RequestBody UUID orderId) {
+        return paymentService.calculateTotalCost(orderId);
     }
 
+    @Override
     @PostMapping("/refund")
-    public ResponseEntity<PaymentDto> paymentSuccess(@RequestBody UUID paymentId) {
-        return ResponseEntity.ok(paymentService.paymentSuccess(paymentId));
+    public PaymentDto paymentSuccess(@RequestBody UUID paymentId) {
+        return paymentService.paymentSuccess(paymentId);
     }
 
+    @Override
     @PostMapping("/failed")
-    public ResponseEntity<PaymentDto> paymentFailed(@RequestBody UUID paymentId) {
-        return ResponseEntity.ok(paymentService.paymentFailed(paymentId));
+    public PaymentDto paymentFailed(@RequestBody UUID paymentId) {
+        return paymentService.paymentFailed(paymentId);
     }
 }
