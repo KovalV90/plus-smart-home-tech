@@ -3,6 +3,7 @@ package ru.yandex.practicum.mapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.PaymentDto;
 import ru.yandex.practicum.model.Payment;
+import ru.yandex.practicum.model.PaymentStatus;
 
 @Component
 public class PaymentMapper {
@@ -14,7 +15,7 @@ public class PaymentMapper {
                 .amount(payment.getAmount())
                 .deliveryPrice(payment.getDeliveryPrice())
                 .totalPrice(payment.getTotalPrice())
-                .status(payment.getStatus())
+                .status(String.valueOf(payment.getStatus()))
                 .username(payment.getUsername())
                 .build();
     }
@@ -25,7 +26,7 @@ public class PaymentMapper {
                 .amount(dto.getAmount())
                 .deliveryPrice(dto.getDeliveryPrice())
                 .totalPrice(dto.getTotalPrice())
-                .status(dto.getStatus())
+                .status(PaymentStatus.valueOf(dto.getStatus()))
                 .username(dto.getUsername())
                 .build();
     }

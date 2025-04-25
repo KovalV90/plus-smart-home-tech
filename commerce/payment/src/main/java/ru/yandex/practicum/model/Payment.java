@@ -22,7 +22,8 @@ public class Payment {
 
     private Double amount;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     private String username;
 

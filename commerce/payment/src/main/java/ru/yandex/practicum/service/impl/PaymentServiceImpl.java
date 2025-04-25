@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.PaymentDto;
 import ru.yandex.practicum.exception.NoPaymentFoundException;
 import ru.yandex.practicum.feign.OrderClient;
-import ru.yandex.practicum.feign.ShoppingStoreClient;
 import ru.yandex.practicum.mapper.PaymentMapper;
 import ru.yandex.practicum.model.Payment;
 import ru.yandex.practicum.model.PaymentStatus;
@@ -60,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentDto paymentSuccess(UUID paymentId) {
         Payment payment = findById(paymentId);
-        payment.setStatus(PaymentStatus.PAID.name());
+        payment.setStatus(PaymentStatus.SUCCESS.name());
         orderClient.paymentSuccess(payment.getOrderId());
         return paymentMapper.toDto(paymentRepository.save(payment));
     }
