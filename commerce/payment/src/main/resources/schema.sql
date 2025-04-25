@@ -4,6 +4,5 @@ CREATE TABLE IF NOT EXISTS payments (
     amount DOUBLE PRECISION,
     delivery_price DOUBLE PRECISION,
     total_price DOUBLE PRECISION,
-    status VARCHAR(50),
-    username VARCHAR(255)
+    status VARCHAR(50)
 );
