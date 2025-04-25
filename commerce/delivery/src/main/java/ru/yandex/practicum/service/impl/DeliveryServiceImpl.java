@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.exception.DeliveryNotFoundException;
+import ru.yandex.practicum.feign.OrderClient;
 import ru.yandex.practicum.feign.WarehouseClient;
 import ru.yandex.practicum.mapper.DeliveryMapper;
 import ru.yandex.practicum.model.Delivery;
@@ -21,6 +22,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final DeliveryRepository repository;
     private final DeliveryMapper mapper;
     private final WarehouseClient warehouseClient;
+    private final OrderClient orderClient;
 
     @Override
     public DeliveryDto createDelivery(DeliveryDto dto) {
@@ -33,14 +35,18 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryDto markDelivered(UUID id) {
         Delivery delivery = findByIdOrThrow(id);
         delivery.setState(DeliveryState.DELIVERED);
-        return mapper.toDto(repository.save(delivery));
+        Delivery savedDelivery = repository.save(delivery);
+        orderClient.markAsDelivered(savedDelivery.getOrderId());
+        return mapper.toDto(savedDelivery);
     }
 
     @Override
     public DeliveryDto markFailed(UUID id) {
         Delivery delivery = findByIdOrThrow(id);
         delivery.setState(DeliveryState.FAILED);
-        return mapper.toDto(repository.save(delivery));
+        Delivery savedDelivery = repository.save(delivery);
+        orderClient.markAsDeliveryFailed(savedDelivery.getOrderId());
+        return mapper.toDto(savedDelivery);
     }
 
     @Override
