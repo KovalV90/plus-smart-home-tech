@@ -10,7 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.ShoppingStoreApi;
+import ru.yandex.practicum.feign.ShoppingStoreClient;
 import ru.yandex.practicum.service.ProductService;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${ShoppingStore.api.prefix}")
-public class ShoppingStoreController implements ShoppingStoreApi {
+public class ShoppingStoreController implements ShoppingStoreClient {
 
     private final ProductService productService;
 

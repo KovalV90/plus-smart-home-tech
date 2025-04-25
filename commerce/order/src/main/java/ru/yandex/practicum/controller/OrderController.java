@@ -107,6 +107,11 @@ public class OrderController implements OrderClient {
     public OrderDto cancelOrder(@RequestBody UUID orderId) {
         return orderService.cancelOrder(orderId);
     }
+    @Override
+    @GetMapping("/{orderId}")
+    public OrderDto getOrderById(@PathVariable UUID orderId) {
+        return orderService.getOrderById(orderId);
+    }
 
 
 }

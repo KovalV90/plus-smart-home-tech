@@ -72,7 +72,6 @@ public class OrderServiceImpl implements OrderService {
         PaymentDto payment = PaymentDto.builder()
                 .amount(order.getProductPrice())
                 .deliveryPrice(deliveryPrice)
-                .username(order.getUsername())
                 .orderId(order.getOrderId())
                 .build();
         payment = paymentClient.createPayment(payment);
@@ -180,6 +179,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto cancelOrder(UUID orderId) {
         return updateState(orderId, OrderState.CANCELED);
+    }
+
+    @Override
+    public OrderDto getOrderById(UUID orderId) {
+        return repository.findById(orderId)
+                .map(mapper::toDto)
+                .orElseThrow(() -> new NoOrderFoundException("Заказ с id=" + orderId + " не найден"));
     }
 
 

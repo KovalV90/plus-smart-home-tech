@@ -61,4 +61,8 @@ public interface OrderClient {
 
     @PostMapping("/api/v1/order/cancel")
     OrderDto cancelOrder(@RequestBody UUID orderId);
+
+    @GetMapping("/api/v1/order/{orderId}")
+    OrderDto getOrderById(@PathVariable("orderId") UUID orderId);
+
 }

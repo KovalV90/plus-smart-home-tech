@@ -2,9 +2,11 @@ package ru.yandex.practicum.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.PaymentDto;
 import ru.yandex.practicum.exception.NoPaymentFoundException;
 import ru.yandex.practicum.feign.OrderClient;
+import ru.yandex.practicum.feign.ShoppingStoreClient;
 import ru.yandex.practicum.mapper.PaymentMapper;
 import ru.yandex.practicum.model.Payment;
 import ru.yandex.practicum.model.PaymentStatus;
@@ -20,11 +22,22 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final OrderClient orderClient;
+    private final ShoppingStoreClient shoppingStoreClient;
+
 
 
     @Override
     public PaymentDto createPayment(PaymentDto dto) {
-        double productPrice = safe(dto.getAmount());
+        OrderDto order = orderClient.getOrderById(dto.getOrderId());
+
+        double productPrice = order.getProducts().entrySet().stream()
+                .mapToDouble(entry -> {
+                    UUID productId = entry.getKey();
+                    long quantity = entry.getValue();
+                    return shoppingStoreClient.getProductById(productId).getPrice() * quantity;
+                })
+                .sum();
+
         double deliveryPrice = safe(dto.getDeliveryPrice());
         double vat = productPrice * 0.10;
         double total = productPrice + vat + deliveryPrice;

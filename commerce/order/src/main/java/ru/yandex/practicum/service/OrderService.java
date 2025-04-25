@@ -24,5 +24,6 @@ public interface OrderService {
     OrderDto paymentSuccess(UUID orderId);
     OrderDto paymentFailed(UUID orderId);
     OrderDto cancelOrder(UUID orderId);
+    OrderDto getOrderById(UUID orderId);
 
 }
