@@ -25,8 +25,6 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private String username;
-
     private Double deliveryPrice;
     private Double totalPrice;
 

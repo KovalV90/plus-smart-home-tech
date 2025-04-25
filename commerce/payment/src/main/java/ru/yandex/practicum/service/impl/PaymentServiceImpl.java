@@ -35,8 +35,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .amount(productPrice)
                 .deliveryPrice(deliveryPrice)
                 .totalPrice(total)
-                .status(PaymentStatus.PENDING.name())
-                .username(dto.getUsername())
+                .status(PaymentStatus.valueOf(PaymentStatus.PENDING.name()))
                 .build();
 
         return paymentMapper.toDto(paymentRepository.save(payment));
@@ -59,7 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentDto paymentSuccess(UUID paymentId) {
         Payment payment = findById(paymentId);
-        payment.setStatus(PaymentStatus.SUCCESS.name());
+        payment.setStatus(PaymentStatus.valueOf(PaymentStatus.SUCCESS.name()));
         orderClient.paymentSuccess(payment.getOrderId());
         return paymentMapper.toDto(paymentRepository.save(payment));
     }
@@ -67,7 +66,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentDto paymentFailed(UUID paymentId) {
         Payment payment = findById(paymentId);
-        payment.setStatus(PaymentStatus.FAILED.name());
+        payment.setStatus(PaymentStatus.valueOf(PaymentStatus.FAILED.name()));
         orderClient.paymentFailed(payment.getOrderId());
         return paymentMapper.toDto(paymentRepository.save(payment));
     }

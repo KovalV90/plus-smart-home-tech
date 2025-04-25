@@ -16,7 +16,6 @@ public class PaymentMapper {
                 .deliveryPrice(payment.getDeliveryPrice())
                 .totalPrice(payment.getTotalPrice())
                 .status(String.valueOf(payment.getStatus()))
-                .username(payment.getUsername())
                 .build();
     }
     public Payment toEntity(PaymentDto dto) {
@@ -27,7 +26,6 @@ public class PaymentMapper {
                 .deliveryPrice(dto.getDeliveryPrice())
                 .totalPrice(dto.getTotalPrice())
                 .status(PaymentStatus.valueOf(dto.getStatus()))
-                .username(dto.getUsername())
                 .build();
     }
 }
