@@ -9,25 +9,25 @@ import ru.yandex.practicum.feign.impl.DeliveryClientFallback;
 import java.util.UUID;
 
 @FeignClient(name = "delivery", fallback = DeliveryClientFallback.class)
-public interface DeliveryClient extends DeliveryApi {
+public interface DeliveryClient {
 
-    @Override
+
     @PutMapping("/api/v1/delivery")
     DeliveryDto createDelivery(@RequestBody DeliveryDto dto);
 
-    @Override
+
     @PostMapping("/api/v1/delivery/successful")
     DeliveryDto markDelivered(@RequestBody UUID orderId);
 
-    @Override
+
     @PostMapping("/api/v1/delivery/failed")
     DeliveryDto markFailed(@RequestBody UUID orderId);
 
-    @Override
-    @GetMapping("/api/v1/delivery/cost")
+
+    @PostMapping("/api/v1/delivery/cost")
     Double calculateDeliveryCost(@RequestBody OrderDto orderDto);
 
-    @Override
+
     @PostMapping("/api/v1/delivery/picked")
     DeliveryDto markPicked(@RequestBody UUID orderId);
 

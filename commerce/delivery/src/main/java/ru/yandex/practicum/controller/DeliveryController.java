@@ -1,10 +1,10 @@
 package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.OrderDto;
+import ru.yandex.practicum.feign.DeliveryClient;
 import ru.yandex.practicum.service.DeliveryService;
 
 import java.util.UUID;
@@ -12,33 +12,37 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/delivery")
 @RequiredArgsConstructor
-public class DeliveryController {
+public class DeliveryController implements DeliveryClient {
 
     private final DeliveryService service;
 
+    @Override
     @PutMapping
-    public ResponseEntity<DeliveryDto> create(@RequestBody DeliveryDto dto) {
-        return ResponseEntity.ok(service.createDelivery(dto));
+    public DeliveryDto createDelivery(@RequestBody DeliveryDto dto) {
+        return service.createDelivery(dto);
     }
 
+    @Override
     @PostMapping("/successful")
-    public ResponseEntity<DeliveryDto> markDelivered(@RequestBody UUID id) {
-        return ResponseEntity.ok(service.markDelivered(id));
+    public DeliveryDto markDelivered(@RequestBody UUID id) {
+        return service.markDelivered(id);
     }
 
+    @Override
     @PostMapping("/failed")
-    public ResponseEntity<DeliveryDto> markFailed(@RequestBody UUID id) {
-        return ResponseEntity.ok(service.markFailed(id));
+    public DeliveryDto markFailed(@RequestBody UUID id) {
+        return service.markFailed(id);
     }
 
-    @GetMapping("/cost")
-    public ResponseEntity<Double> calculateDeliveryCost(@RequestBody OrderDto orderDto) {
-        return ResponseEntity.ok(service.calculateDeliveryCost(orderDto));
+    @Override
+    @PostMapping("/cost")
+    public Double calculateDeliveryCost(@RequestBody OrderDto orderDto) {
+        return service.calculateDeliveryCost(orderDto);
     }
 
+    @Override
     @PostMapping("/picked")
-    public ResponseEntity<DeliveryDto> markPicked(@RequestBody UUID id) {
-        return ResponseEntity.ok(service.markInProgress(id));
+    public DeliveryDto markPicked(@RequestBody UUID id) {
+        return service.markInProgress(id);
     }
-
 }
