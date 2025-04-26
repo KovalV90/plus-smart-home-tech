@@ -1,0 +1,192 @@
+package ru.yandex.practicum.service.impl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.dto.*;
+import ru.yandex.practicum.exception.NoOrderFoundException;
+import ru.yandex.practicum.feign.DeliveryClient;
+import ru.yandex.practicum.feign.PaymentClient;
+import ru.yandex.practicum.feign.ShoppingCartClient;
+import ru.yandex.practicum.feign.WarehouseClient;
+import ru.yandex.practicum.mapper.OrderMapper;
+import ru.yandex.practicum.model.Order;
+import ru.yandex.practicum.dto.OrderState;
+import ru.yandex.practicum.repository.OrderRepository;
+import ru.yandex.practicum.service.OrderService;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OrderServiceImpl implements OrderService {
+
+    private final OrderRepository repository;
+    private final OrderMapper mapper;
+    private final ShoppingCartClient shoppingCartClient;
+    private final PaymentClient paymentClient;
+    private final DeliveryClient deliveryClient;
+    private final WarehouseClient warehouseClient;
+
+    @Override
+    public List<OrderDto> getClientOrders(String username) {
+        return repository.findAllByUsername(username)
+                .stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderDto createOrder(CreateNewOrderRequest request) {
+        UUID cartId = request.getShoppingCart().getShoppingCartId();
+        ShoppingCartDto cart = shoppingCartClient.getShoppingCartById(cartId);
+
+
+        Order order = Order.builder()
+                .shoppingCartId(cart.getShoppingCartId())
+                .products(cart.getProducts())
+                .deliveryAddress(String.valueOf(request.getDeliveryAddress()))
+                .state(OrderState.NEW.name())
+                .username(request.getUsername())
+                .build();
+
+        order = repository.save(order);
+        log.info("Создан черновик заказа: {}", order.getOrderId());
+
+        warehouseClient.assemblyProductForOrderFromShoppingCart(cart);
+        log.info("Заказ передан на сборку на склад: {}", order.getOrderId());
+
+        AddressDto warehouseAddress = warehouseClient.getWarehouseAddress();
+        log.info("Адрес склада получен: {}", warehouseAddress);
+
+        Double productPrice = paymentClient.calculateProductCost(order.getOrderId());
+        order.setProductPrice(productPrice);
+        log.info("Рассчитана стоимость товаров: {}", productPrice);
+
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
+
+        order.setDeliveryPrice(deliveryPrice);
+        log.info("Рассчитана стоимость доставки: {}", deliveryPrice);
+
+        PaymentDto payment = PaymentDto.builder()
+                .amount(order.getProductPrice())
+                .deliveryPrice(deliveryPrice)
+                .orderId(order.getOrderId())
+                .build();
+        payment = paymentClient.createPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
+        log.info("Создан платёж: {}", payment.getPaymentId());
+
+        DeliveryDto delivery = DeliveryDto.builder()
+                .address(request.getDeliveryAddress())
+                .fromAddress(warehouseAddress)
+                .orderId(order.getOrderId())
+                .build();
+        delivery = deliveryClient.createDelivery(delivery);
+        order.setDeliveryId(delivery.getId());
+        log.info("Создана доставка: {}", delivery.getId());
+
+        Order savedOrder = repository.save(order);
+
+        shoppingCartClient.deactivateShoppingCart(cartId);
+        log.info("Корзина деактивирована, заказ завершён: {}", savedOrder.getOrderId());
+
+        return mapper.toDto(savedOrder);
+    }
+
+
+    @Override
+    public OrderDto returnProducts(ProductReturnRequest request) {
+        return updateState(request.getOrderId(), OrderState.PRODUCT_RETURNED);
+    }
+
+    @Override
+    public OrderDto markAsPaid(UUID orderId) {
+        return updateState(orderId, OrderState.PAID);
+    }
+
+    @Override
+    public OrderDto markAsPaymentFailed(UUID orderId) {
+        return updateState(orderId, OrderState.PAYMENT_FAILED);
+    }
+
+    @Override
+    public OrderDto markAsDelivered(UUID orderId) {
+        return updateState(orderId, OrderState.DELIVERED);
+    }
+
+    @Override
+    public OrderDto markAsDeliveryFailed(UUID orderId) {
+        return updateState(orderId, OrderState.DELIVERY_FAILED);
+    }
+
+    @Override
+    public OrderDto completeOrder(UUID orderId) {
+        return updateState(orderId, OrderState.COMPLETED);
+    }
+
+    @Override
+    public OrderDto calculateTotalCost(UUID orderId) {
+        Order order = findById(orderId);
+        order.setTotalPrice(safe(order.getProductPrice()) + safe(order.getDeliveryPrice()));
+        return mapper.toDto(repository.save(order));
+    }
+
+    @Override
+    public OrderDto calculateDeliveryCost(UUID orderId) {
+        Order order = findById(orderId);
+        Double deliveryPrice = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
+        order.setDeliveryPrice(deliveryPrice);
+        return mapper.toDto(repository.save(order));
+    }
+
+    @Override
+    public OrderDto markAsAssembled(UUID orderId) {
+        return updateState(orderId, OrderState.ASSEMBLED);
+    }
+
+    @Override
+    public OrderDto markAsAssemblyFailed(UUID orderId) {
+        return updateState(orderId, OrderState.ASSEMBLY_FAILED);
+    }
+
+    private Order findById(UUID id) {
+        return repository.findById(id).orElseThrow(() ->
+                new NoOrderFoundException("Order c id не найден: " + id));
+    }
+
+    private OrderDto updateState(UUID id, OrderState state) {
+        Order order = findById(id);
+        order.setState(state.name());
+        return mapper.toDto(repository.save(order));
+    }
+
+    private double safe(Double val) {
+        return val != null ? val : 0.0;
+    }
+
+    @Override
+    public OrderDto paymentSuccess(UUID orderId) {
+        return updateState(orderId, OrderState.PAID);
+    }
+
+    @Override
+    public OrderDto paymentFailed(UUID orderId) {
+        return updateState(orderId, OrderState.PAYMENT_FAILED);
+    }
+
+    @Override
+    public OrderDto cancelOrder(UUID orderId) {
+        return updateState(orderId, OrderState.CANCELED);
+    }
+
+    @Override
+    public OrderDto getOrderById(UUID orderId) {
+        return repository.findById(orderId)
+                .map(mapper::toDto)
+                .orElseThrow(() -> new NoOrderFoundException("Заказ с id=" + orderId + " не найден"));
+    }
+
+
+}

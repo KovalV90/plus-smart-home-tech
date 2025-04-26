@@ -133,7 +133,7 @@ public class WarehouseServiceImpl implements WarehouseService {
             quantityState = QuantityState.ENDED;
         } else if (quantity < 10) {
             quantityState = QuantityState.FEW;
-        } else if (quantity < 100 && quantity >= 10) {
+        } else if (quantity < 100) {
             quantityState = QuantityState.ENOUGH;
         } else {
             quantityState = QuantityState.MANY;
@@ -145,5 +145,59 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         log.info("Обновление статуса количества товара в shopping-store: productId = {}, новый статус = {}", product.getProductId(), quantityState);
         shoppingStoreClient.setProductQuantityState(request);
+    }
+
+    @Override
+    @Transactional
+    public void assemblyProductForOrderFromShoppingCart(ShoppingCartDto cart) {
+        log.info("Запуск сборки товаров по корзине: {}", cart);
+        Map<UUID, Long> cartProductsMap = cart.getProducts();
+        List<WarehouseProduct> warehouseProducts = warehouseRepository.findAllById(cartProductsMap.keySet());
+
+        List<String> exceptionMessages = new ArrayList<>();
+
+        for (WarehouseProduct product : warehouseProducts) {
+            Long requiredQuantity = cartProductsMap.get(product.getProductId());
+            if (product.getQuantity() < requiredQuantity) {
+                exceptionMessages.add(String.format("Недостаток товара с id = %s, не хватает %d шт.",
+                        product.getProductId(), requiredQuantity - product.getQuantity()));
+            }
+        }
+
+        if (!exceptionMessages.isEmpty()) {
+            log.error("Ошибка сборки: {}", exceptionMessages);
+            throw new NotEnoughProductQuantityException(exceptionMessages.toString());
+        }
+
+        for (WarehouseProduct product : warehouseProducts) {
+            Long requiredQuantity = cartProductsMap.get(product.getProductId());
+            product.setQuantity(product.getQuantity() - requiredQuantity);
+            warehouseRepository.save(product);
+            updateProductQuantityInShoppingStore(product);
+        }
+
+        log.info("Сборка товаров завершена успешно.");
+    }
+
+    @Override
+    @Transactional
+    public void returnProducts(BookedProductsDto bookedProducts) {
+        log.info("Запуск возврата товаров на склад: {}", bookedProducts);
+        Map<UUID, Long> productsToReturn = bookedProducts.getProducts();
+
+        for (Map.Entry<UUID, Long> entry : productsToReturn.entrySet()) {
+            WarehouseProduct product = warehouseRepository.findById(entry.getKey())
+                    .orElseThrow(() -> new NotFoundException("Товар с id = " + entry.getKey() + " не найден на складе"));
+            product.setQuantity(product.getQuantity() + entry.getValue());
+            warehouseRepository.save(product);
+            updateProductQuantityInShoppingStore(product);
+        }
+
+        log.info("Возврат товаров завершен успешно.");
+    }
+
+    @Override
+    public void shippedToDelivery(UUID orderId, UUID deliveryId) {
+        log.info("Заказ передан в доставку: orderId = {}, deliveryId = {}", orderId, deliveryId);
     }
 }

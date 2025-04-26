@@ -10,12 +10,12 @@ import java.util.UUID;
 
 
 @FeignClient(name = "shopping-store")
-public interface ShoppingStoreClient extends ShoppingStoreApi {
-    @Override
+public interface ShoppingStoreClient {
+
     @PostMapping("/quantityState")
     void setProductQuantityState(@RequestBody SetProductQuantityStateRequest request);
 
-    @Override
+
     @GetMapping
     List<ProductDto> getProductsByCategory(
             @RequestParam("category") ProductCategory category,
@@ -23,19 +23,19 @@ public interface ShoppingStoreClient extends ShoppingStoreApi {
             @RequestParam("size") int size,
             @RequestParam(value = "sort", required = false) List<String> sort);
 
-    @Override
+
     @PutMapping
     ProductDto createNewProduct(@RequestBody NewProductRequest newProductRequest);
 
-    @Override
+
     @PostMapping
     ProductDto updateProduct(@RequestBody UpdateProductRequest updateProductRequest);
 
-    @Override
+
     @PostMapping("/removeProductFromStore")
     Boolean removeProductFromStore(@RequestBody UUID id);
 
-    @Override
+
     @GetMapping("/{productId}")
     ProductDto getProductById(@PathVariable("productId") UUID productId);
 }

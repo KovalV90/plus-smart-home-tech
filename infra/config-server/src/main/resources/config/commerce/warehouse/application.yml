@@ -1,23 +1,39 @@
 server:
   port: 0
 
-Warehouse:
-  api:
-    prefix: /api/v1/warehouse
-
 spring:
+  application:
+    name: warehouse
+
   datasource:
     driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6542/commerce_warehouse
     username: dbuser
     password: 12345
-    url: jdbc:postgresql://localhost:6542/commerce_warehouse
+
   jpa:
     hibernate:
       ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
-        format_sql: 'true'
-    show-sql: 'true'
+        format_sql: true
+
   sql:
     init:
       mode: always
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+order:
+  api:
+    prefix: /api/v1/order
+
+Warehouse:
+  api:
+    prefix: /api/v1/warehouse

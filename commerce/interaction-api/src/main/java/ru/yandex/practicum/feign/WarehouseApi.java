@@ -3,6 +3,8 @@ package ru.yandex.practicum.feign;
 
 import ru.yandex.practicum.dto.*;
 
+import java.util.UUID;
+
 public interface WarehouseApi {
 
 
@@ -16,4 +18,10 @@ public interface WarehouseApi {
 
 
     AddressDto getWarehouseAddress();
+
+    void assemblyProductForOrderFromShoppingCart(ShoppingCartDto cart);
+
+    void returnProducts(BookedProductsDto bookedProducts);
+
+    void shippedToDelivery(UUID orderId, UUID deliveryId);
 }
